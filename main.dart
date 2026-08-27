@@ -11,22 +11,17 @@ void main() {
     print('Plate: $plate');
 
     // Vehicle Type
-    String? vehicleType;
+    print('Which vehicle type?');
+    print('Car or Motorcycle or Other');
 
-    while (true) {
-      print('Which vehicle type?');
-      print('Car or Motorcycle or Other');
+    String? vehicleType = stdin.readLineSync()?.trim().toLowerCase();
 
-      vehicleType = stdin.readLineSync()?.trim().toLowerCase();
-
-      if (vehicleType == 'car') {
-        print('Vehicle: Car');
-      } else if (vehicleType == 'motorcycle') {
-        print('Vehicle: Motorcycle');
-      } else {
-        print('Vehicle: Other');
-      }
-      break;
+    if (vehicleType == 'car') {
+      print('Vehicle: Car');
+    } else if (vehicleType == 'motorcycle') {
+      print('Vehicle: Motorcycle');
+    } else {
+      print('Vehicle: Other');
     }
 
     // Duration
