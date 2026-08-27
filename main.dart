@@ -1,4 +1,5 @@
 import 'dart:io';
+
 //ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(ส่วนของ interation3)
 int totalTransactions = 0;
 int carCount = 0;
@@ -9,7 +10,6 @@ double totalRevenue = 0;
 
 void main() {
   while (true) {
-
     print('========================================');
     print('CAMPUS PARKING SYSTEM');
     print('========================================');
@@ -152,6 +152,24 @@ void main() {
 
       print('Final fee: $fee baht');
       print('Car Out');
+      // Update daily summary
+      totalTransactions++;
+
+      if (vehicleType == 'car') {
+        carCount++;
+      } else if (vehicleType == 'motorcycle') {
+        motorcycleCount++;
+      }
+
+      if (isMember) {
+        memberCount++;
+      }
+
+      if (lostTicket) {
+        lostTicketCount++;
+      }
+
+      totalRevenue += fee;
     } else if (choice == '2') {
       print('Show daily summary - coming soon');
     } else if (choice == '3') {
