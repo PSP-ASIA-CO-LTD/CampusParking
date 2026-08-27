@@ -1,6 +1,6 @@
 import 'dart:io';
 
-//ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(ส่วนของ interation3)
+//ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(Interation3)
 int totalTransactions = 0;
 int carCount = 0;
 int motorcycleCount = 0;
@@ -180,7 +180,7 @@ void main() {
       print('Members            : $memberCount');
       print('Lost tickets       : $lostTicketCount');
       print('Total revenue      : ${totalRevenue.toStringAsFixed(2)} THB');
-      
+
     } else if (choice == '3') {
       break;
     } else {
