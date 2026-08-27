@@ -174,6 +174,13 @@ void main() {
       print('========================================');
       print('DAILY SUMMARY');
       print('========================================');
+      print('Total transactions : $totalTransactions');
+      print('Cars               : $carCount');
+      print('Motorcycles        : $motorcycleCount');
+      print('Members            : $memberCount');
+      print('Lost tickets       : $lostTicketCount');
+      print('Total revenue      : ${totalRevenue.toStringAsFixed(2)} THB');
+      
     } else if (choice == '3') {
       break;
     } else {
