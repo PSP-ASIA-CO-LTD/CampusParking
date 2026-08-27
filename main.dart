@@ -1,4 +1,11 @@
 import 'dart:io';
+//ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(ส่วนของ interation3)
+int totalTransactions = 0;
+int carCount = 0;
+int motorcycleCount = 0;
+int memberCount = 0;
+int lostTicketCount = 0;
+double totalRevenue = 0;
 
 void main() {
   while (true) {
