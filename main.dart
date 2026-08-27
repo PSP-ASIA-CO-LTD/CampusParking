@@ -171,7 +171,9 @@ void main() {
 
       totalRevenue += fee;
     } else if (choice == '2') {
-      print('Show daily summary - coming soon');
+      print('========================================');
+      print('DAILY SUMMARY');
+      print('========================================');
     } else if (choice == '3') {
       break;
     } else {
