@@ -4,6 +4,7 @@ import 'dart:io';
 int totalTransactions = 0;
 int carCount = 0;
 int motorcycleCount = 0;
+int otherCount = 0;
 int memberCount = 0;
 int lostTicketCount = 0;
 double totalRevenue = 0;
@@ -18,7 +19,7 @@ void main() {
     print('3. Exit');
 
     stdout.write('Select: ');
-    String? choice = stdin.readLineSync();
+    String? choice = stdin.readLineSync()?.trim();
 
     if (choice == '1') {
       // Plate
@@ -159,6 +160,8 @@ void main() {
         carCount++;
       } else if (vehicleType == 'motorcycle') {
         motorcycleCount++;
+      } else {
+        otherCount++;
       }
 
       if (isMember) {
@@ -177,10 +180,10 @@ void main() {
       print('Total transactions : $totalTransactions');
       print('Cars               : $carCount');
       print('Motorcycles        : $motorcycleCount');
+      print('Other              : $otherCount');
       print('Members            : $memberCount');
       print('Lost tickets       : $lostTicketCount');
       print('Total revenue      : ${totalRevenue.toStringAsFixed(2)} THB');
-
     } else if (choice == '3') {
       break;
     } else {
