@@ -1,17 +1,16 @@
 // เก็บข้อมูลของ parking transaction หนึ่งครั้ง
 class ParkingTransaction {
-  String? plate;
-  String? vehicleType;
-  int duration;
-  bool isMember;
-  bool lostTicket;
-  int fee = 0;
+  final String plate;
+  final String vehicleType;
+  final int duration;
+  final bool isMember;
+  final bool lostTicket;
 
-  ParkingTransaction(
-    this.plate,
-    this.vehicleType,
-    this.duration,
-    this.isMember,
-    this.lostTicket,
-  );
+  ParkingTransaction({
+    required this.plate,
+    required this.vehicleType,
+    required this.duration,
+    required this.isMember,
+    required this.lostTicket,
+  });
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../lib/parking_fee_calculator.dart';
 import '../lib/parking_transaction.dart';
 
 //ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(Interation3)
@@ -12,6 +13,8 @@ int lostTicketCount = 0;
 double totalRevenue = 0;
 
 void main() {
+  ParkingFeeCalculator feeCalculator = ParkingFeeCalculator();
+
   while (true) {
     print('========================================');
     print('CAMPUS PARKING SYSTEM');
@@ -26,7 +29,7 @@ void main() {
     if (choice == '1') {
       // Plate
       stdout.write('Enter plate number: ');
-      String? plate = stdin.readLineSync();
+      String plate = stdin.readLineSync() ?? '';
 
       print('Plate: $plate');
 
@@ -34,7 +37,7 @@ void main() {
       print('Which vehicle type?');
       print('Car or Motorcycle or Other');
 
-      String? vehicleType = stdin.readLineSync()?.trim().toLowerCase();
+      String vehicleType = (stdin.readLineSync() ?? '').trim().toLowerCase();
 
       if (vehicleType == 'car') {
         print('Vehicle: Car');
@@ -111,60 +114,17 @@ void main() {
 
       // Store transaction data
       ParkingTransaction transaction = ParkingTransaction(
-        plate,
-        vehicleType,
-        duration,
-        isMember,
-        lostTicket,
+        plate: plate,
+        vehicleType: vehicleType,
+        duration: duration,
+        isMember: isMember,
+        lostTicket: lostTicket,
       );
 
       // Calculate fee
-      int fee = 0;
+      ParkingFeeResult feeResult = feeCalculator.calculateFee(transaction);
 
-      if (transaction.lostTicket) {
-        // Lost ticket fee replaces everything: no duration, no cap, no discount
-        if (transaction.vehicleType == 'car') {
-          fee = 200;
-        } else if (transaction.vehicleType == 'motorcycle') {
-          fee = 100;
-        } else {
-          fee = 300;
-        }
-      } else {
-        int hours = 0;
-
-        if (transaction.duration <= 15) {
-          fee = 0;
-        } else {
-          hours = (transaction.duration + 59) ~/ 60;
-
-          if (transaction.vehicleType == 'car') {
-            fee = hours * 20;
-            if (fee > 100) {
-              fee = 100;
-            }
-          } else if (transaction.vehicleType == 'motorcycle') {
-            fee = hours * 10;
-            if (fee > 50) {
-              fee = 50;
-            }
-          } else {
-            fee = hours * 30;
-            if (fee > 150) {
-              fee = 150;
-            }
-          }
-        }
-
-        // Member discount
-        if (transaction.isMember) {
-          fee = (fee * 0.8).round();
-        }
-      }
-
-      transaction.fee = fee;
-
-      print('Final fee: ${transaction.fee} baht');
+      print('Final fee: ${feeResult.finalFee} baht');
       print('Car Out');
       // Update daily summary
       totalTransactions++;
@@ -185,7 +145,7 @@ void main() {
         lostTicketCount++;
       }
 
-      totalRevenue += transaction.fee;
+      totalRevenue += feeResult.finalFee;
     } else if (choice == '2') {
       print('========================================');
       print('DAILY SUMMARY');
