@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../lib/parking_transaction.dart';
+
 //ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(Interation3)
 int totalTransactions = 0;
 int carCount = 0;
@@ -107,14 +109,23 @@ void main() {
         print('Please enter y or n.');
       }
 
+      // Store transaction data
+      ParkingTransaction transaction = ParkingTransaction(
+        plate,
+        vehicleType,
+        duration,
+        isMember,
+        lostTicket,
+      );
+
       // Calculate fee
       int fee = 0;
 
-      if (lostTicket) {
+      if (transaction.lostTicket) {
         // Lost ticket fee replaces everything: no duration, no cap, no discount
-        if (vehicleType == 'car') {
+        if (transaction.vehicleType == 'car') {
           fee = 200;
-        } else if (vehicleType == 'motorcycle') {
+        } else if (transaction.vehicleType == 'motorcycle') {
           fee = 100;
         } else {
           fee = 300;
@@ -122,17 +133,17 @@ void main() {
       } else {
         int hours = 0;
 
-        if (duration <= 15) {
+        if (transaction.duration <= 15) {
           fee = 0;
         } else {
-          hours = (duration + 59) ~/ 60;
+          hours = (transaction.duration + 59) ~/ 60;
 
-          if (vehicleType == 'car') {
+          if (transaction.vehicleType == 'car') {
             fee = hours * 20;
             if (fee > 100) {
               fee = 100;
             }
-          } else if (vehicleType == 'motorcycle') {
+          } else if (transaction.vehicleType == 'motorcycle') {
             fee = hours * 10;
             if (fee > 50) {
               fee = 50;
@@ -146,33 +157,35 @@ void main() {
         }
 
         // Member discount
-        if (isMember) {
+        if (transaction.isMember) {
           fee = (fee * 0.8).round();
         }
       }
 
-      print('Final fee: $fee baht');
+      transaction.fee = fee;
+
+      print('Final fee: ${transaction.fee} baht');
       print('Car Out');
       // Update daily summary
       totalTransactions++;
 
-      if (vehicleType == 'car') {
+      if (transaction.vehicleType == 'car') {
         carCount++;
-      } else if (vehicleType == 'motorcycle') {
+      } else if (transaction.vehicleType == 'motorcycle') {
         motorcycleCount++;
       } else {
         otherCount++;
       }
 
-      if (isMember) {
+      if (transaction.isMember) {
         memberCount++;
       }
 
-      if (lostTicket) {
+      if (transaction.lostTicket) {
         lostTicketCount++;
       }
 
-      totalRevenue += fee;
+      totalRevenue += transaction.fee;
     } else if (choice == '2') {
       print('========================================');
       print('DAILY SUMMARY');
