@@ -15,5 +15,7 @@ class ParkingSummary {
   void addTransaction(
     ParkingTransaction transaction,
     ParkingFeeResult feeResult,
-  ) {}
+  ) {
+    totalTransactions++;
+  }
 }
