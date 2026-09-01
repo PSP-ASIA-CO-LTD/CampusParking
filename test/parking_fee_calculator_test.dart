@@ -4,6 +4,7 @@ import '../lib/parking_fee_calculator.dart';
 import '../lib/parking_transaction.dart';
 
 void main() {
+  //car test
   test('Car parked for 15 minutes should be free', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
@@ -84,5 +85,8 @@ void main() {
     expect(result.finalFee, 100);
   });
 
+
+  //motorcycle test
+  test('Motorcycle parked for 15 minutes should be free',(){});
 
 }
