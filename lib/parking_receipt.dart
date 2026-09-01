@@ -27,5 +27,7 @@ class ParkingReceipt {
     }
 
     print('Final fee        : ${feeResult.finalFee.toStringAsFixed(2)} THB');
+
+     print('----------------------------------------');
   }
 }

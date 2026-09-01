@@ -3,10 +3,12 @@ import 'dart:io';
 import '../lib/parking_fee_calculator.dart';
 import '../lib/parking_transaction.dart';
 import '../lib/parking_summary.dart';
+import '../lib/parking_receipt.dart';
 
 void main() {
   ParkingFeeCalculator feeCalculator = ParkingFeeCalculator();
   ParkingSummary summary = ParkingSummary();
+  ParkingReceipt receipt = ParkingReceipt();
 
   while (true) {
     print('========================================');
