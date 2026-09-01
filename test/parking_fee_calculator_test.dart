@@ -85,13 +85,12 @@ void main() {
     expect(result.finalFee, 100);
   });
 
-
   //motorcycle test
-  test('Motorcycle parked for 15 minutes should be free',(){
+  test('Motorcycle parked for 15 minutes should be free', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
-      vehicleType: 'Motorcycle',
+      vehicleType: 'motorcycle',
       duration: 15,
       isMember: false,
       lostTicket: false,
@@ -101,7 +100,37 @@ void main() {
 
     expect(result.normalFee, 0);
     expect(result.finalFee, 0);
-
   });
 
+  test('Motorcycle parked for 16 minutes should cost 10 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'motorcycle',
+      duration: 16,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 10);
+    expect(result.finalFee, 10);
+  });
+
+  test('Motorcycle parked for 60 minutes should cost 10 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'motorcycle',
+      duration: 60,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 10);
+    expect(result.finalFee, 10);
+  });
 }
