@@ -11,10 +11,21 @@ class ParkingReceipt {
     print('----------------------------------------');
     print('PARKING RECEIPT');
     print('----------------------------------------');
-    
+
     print('Plate            : ${transaction.plate}');
     print('Vehicle type     : ${transaction.vehicleType}');
     print('Duration         : ${transaction.duration} minutes');
 
+    if (transaction.lostTicket) {
+      print('Lost ticket      : Yes');
+      print(
+        'Lost-ticket fee  : ${feeResult.lostTicketFee.toStringAsFixed(2)} THB',
+      );
+    } else {
+      print('Normal fee       : ${feeResult.normalFee.toStringAsFixed(2)} THB');
+      print('Member discount  : ${feeResult.discount.toStringAsFixed(2)} THB');
+    }
+
+    print('Final fee        : ${feeResult.finalFee.toStringAsFixed(2)} THB');
   }
 }
