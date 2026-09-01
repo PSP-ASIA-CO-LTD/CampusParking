@@ -1,0 +1,6 @@
+name: campus_parking
+description: Campus parking fee CLI application
+version: 1.0.0
+
+environment:
+  sdk: ^3.13.0

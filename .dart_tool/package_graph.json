@@ -1,0 +1,14 @@
+{
+  "roots": [
+    "campus_parking"
+  ],
+  "packages": [
+    {
+      "name": "campus_parking",
+      "version": "1.0.0",
+      "dependencies": [],
+      "devDependencies": []
+    }
+  ],
+  "configVersion": 1
+}

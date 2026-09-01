@@ -119,7 +119,7 @@ void main() {
 
       print('Final fee: ${feeResult.finalFee} baht');
       print('Car Out');
-      
+
       // Update daily summary
       summary.addTransaction(transaction, feeResult);
     } else if (choice == '2') {
@@ -132,7 +132,9 @@ void main() {
       print('Other              : ${summary.otherCount}');
       print('Members            : ${summary.memberCount}');
       print('Lost tickets       : ${summary.lostTicketCount}');
-      print('Total revenue      : ${summary.totalRevenue.toStringAsFixed(2)} THB');
+      print(
+        'Total revenue      : ${summary.totalRevenue.toStringAsFixed(2)} THB',
+      );
     } else if (choice == '3') {
       break;
     } else {
