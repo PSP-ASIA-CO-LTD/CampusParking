@@ -68,6 +68,7 @@ test('Car parked for 61 minutes should cost 40 baht', () {
     expect(result.finalFee, 40);
 });
 
+test('Car parked for 360 minutes should be capped at 100 baht', () {});
 
 
 }
