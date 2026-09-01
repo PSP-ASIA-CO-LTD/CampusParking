@@ -97,6 +97,10 @@ void main() {
       lostTicket: false,
     );
 
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 0);
+    expect(result.finalFee, 0);
 
   });
 
