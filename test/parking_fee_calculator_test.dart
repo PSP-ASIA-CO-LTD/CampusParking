@@ -62,6 +62,10 @@ test('Car parked for 61 minutes should cost 40 baht', () {
       lostTicket: false,
     );
 
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 40);
+    expect(result.finalFee, 40);
 });
 
 
