@@ -165,4 +165,38 @@ void main() {
     expect(result.normalFee, 50);
     expect(result.finalFee, 50);
   });
+
+  //Other vehicle
+
+  test('Other vehicle parked for 15 minutes should cost 0 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'other',
+      duration: 15,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 0);
+    expect(result.finalFee, 0);
+  });
+
+  test('Other vehicle parked for 16 minutes should cost 30 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'other',
+      duration: 30,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 30);
+    expect(result.finalFee, 30);
+  });
 }
