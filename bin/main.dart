@@ -118,6 +118,8 @@ void main() {
 
       // Calculate fee
       ParkingFeeResult feeResult = feeCalculator.calculateFee(transaction);
+      //receipt
+      receipt.printReceipt(transaction, feeResult);
 
       print('Final fee: ${feeResult.finalFee} baht');
       print('Car Out');
