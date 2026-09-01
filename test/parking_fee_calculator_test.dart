@@ -233,5 +233,20 @@ void main() {
   });
 
   //member
+  test('Member car parked for 16 minutes should cost 16 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'car',
+      duration: 16,
+      isMember: true,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 20);
+    expect(result.finalFee, 16);
+  });
 
 }
