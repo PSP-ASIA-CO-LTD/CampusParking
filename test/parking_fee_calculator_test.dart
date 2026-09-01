@@ -87,6 +87,17 @@ void main() {
 
 
   //motorcycle test
-  test('Motorcycle parked for 15 minutes should be free',(){});
+  test('Motorcycle parked for 15 minutes should be free',(){
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'Motorcycle',
+      duration: 15,
+      isMember: false,
+      lostTicket: false,
+    );
+
+
+  });
 
 }
