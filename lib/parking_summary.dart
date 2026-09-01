@@ -1,0 +1,9 @@
+class ParkingSummary {
+  int totalTransactions = 0;
+  int carCount = 0;
+  int motorcycleCount = 0;
+  int otherCount = 0;
+  int memberCount = 0;
+  int lostTicketCount = 0;
+  double totalRevenue = 0;
+}
