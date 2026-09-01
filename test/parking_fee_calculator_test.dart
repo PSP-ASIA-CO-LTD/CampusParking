@@ -50,10 +50,10 @@ void main() {
 
     expect(result.normalFee, 20);
     expect(result.finalFee, 20);
-});
+  });
 
-test('Car parked for 61 minutes should cost 40 baht', () {
-  final calculator = ParkingFeeCalculator();
+  test('Car parked for 61 minutes should cost 40 baht', () {
+    final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
       vehicleType: 'car',
@@ -66,9 +66,23 @@ test('Car parked for 61 minutes should cost 40 baht', () {
 
     expect(result.normalFee, 40);
     expect(result.finalFee, 40);
-});
+  });
 
-test('Car parked for 360 minutes should be capped at 100 baht', () {});
+  test('Car parked for 360 minutes should be capped at 100 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'car',
+      duration: 360,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 100);
+    expect(result.finalFee, 100);
+  });
 
 
 }
