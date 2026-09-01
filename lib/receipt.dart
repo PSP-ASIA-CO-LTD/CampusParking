@@ -7,5 +7,14 @@ class ParkingReceipt {
   void printReceipt(
     ParkingTransaction transaction,
     ParkingFeeResult feeResult,
-  ) {}
+  ) {
+    print('----------------------------------------');
+    print('PARKING RECEIPT');
+    print('----------------------------------------');
+    
+    print('Plate            : ${transaction.plate}');
+    print('Vehicle type     : ${transaction.vehicleType}');
+    print('Duration         : ${transaction.duration} minutes');
+
+  }
 }
