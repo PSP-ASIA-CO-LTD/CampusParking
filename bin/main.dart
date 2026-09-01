@@ -4,17 +4,9 @@ import '../lib/parking_fee_calculator.dart';
 import '../lib/parking_transaction.dart';
 import '../lib/parking_summary.dart';
 
-//ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(Interation3)
-int totalTransactions = 0;
-int carCount = 0;
-int motorcycleCount = 0;
-int otherCount = 0;
-int memberCount = 0;
-int lostTicketCount = 0;
-double totalRevenue = 0;
-
 void main() {
   ParkingFeeCalculator feeCalculator = ParkingFeeCalculator();
+  ParkingSummary summary = ParkingSummary();
 
   while (true) {
     print('========================================');
@@ -129,22 +121,18 @@ void main() {
       print('Car Out');
       
       // Update daily summary
-      
-
-
-
-      totalRevenue += feeResult.finalFee;
+      summary.addTransaction(transaction, feeResult);
     } else if (choice == '2') {
       print('========================================');
       print('DAILY SUMMARY');
       print('========================================');
-      print('Total transactions : $totalTransactions');
-      print('Cars               : $carCount');
-      print('Motorcycles        : $motorcycleCount');
-      print('Other              : $otherCount');
-      print('Members            : $memberCount');
-      print('Lost tickets       : $lostTicketCount');
-      print('Total revenue      : ${totalRevenue.toStringAsFixed(2)} THB');
+      print('Total transactions : ${summary.totalTransactions}');
+      print('Cars               : ${summary.carCount}');
+      print('Motorcycles        : ${summary.motorcycleCount}');
+      print('Other              : ${summary.otherCount}');
+      print('Members            : ${summary.memberCount}');
+      print('Lost tickets       : ${summary.lostTicketCount}');
+      print('Total revenue      : ${summary.totalRevenue.toStringAsFixed(2)} THB');
     } else if (choice == '3') {
       break;
     } else {

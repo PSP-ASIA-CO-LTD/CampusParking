@@ -18,20 +18,22 @@ class ParkingSummary {
   ) {
     totalTransactions++;
 
-          if (transaction.vehicleType == 'car') {
-        carCount++;
-      } else if (transaction.vehicleType == 'motorcycle') {
-        motorcycleCount++;
-      } else {
-        otherCount++;
-      }
+    if (transaction.vehicleType == 'car') {
+      carCount++;
+    } else if (transaction.vehicleType == 'motorcycle') {
+      motorcycleCount++;
+    } else {
+      otherCount++;
+    }
 
-      if (transaction.isMember) {
-        memberCount++;
-      }
+    if (transaction.isMember) {
+      memberCount++;
+    }
 
-      if (transaction.lostTicket) {
-        lostTicketCount++;
-      }
+    if (transaction.lostTicket) {
+      lostTicketCount++;
+    }
+
+    totalRevenue += feeResult.finalFee;
   }
 }
