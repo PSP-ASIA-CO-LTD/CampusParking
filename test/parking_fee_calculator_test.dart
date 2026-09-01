@@ -265,4 +265,52 @@ void main() {
     expect(result.finalFee, 80);
   });
 
+  //lost ticket
+  test('Car lost ticket should cost 200 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'car',
+      duration: 30,
+      isMember: false,
+      lostTicket: true,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 0);
+    expect(result.finalFee, 200);
+  });
+
+  test('Motorcycle lost ticket should cost 100 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'motorcycle',
+      duration: 30,
+      isMember: false,
+      lostTicket: true,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 0);
+    expect(result.finalFee, 100);
+  });
+
+  test('Other vehicle lost ticket should cost 300 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'other',
+      duration: 30,
+      isMember: false,
+      lostTicket: true,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 0);
+    expect(result.finalFee, 300);
+  });
 }
