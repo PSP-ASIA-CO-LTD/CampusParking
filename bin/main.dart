@@ -126,6 +126,7 @@ void main() {
 
       print('Final fee: ${feeResult.finalFee} baht');
       print('Car Out');
+      
       // Update daily summary
       totalTransactions++;
 

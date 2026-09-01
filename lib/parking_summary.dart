@@ -1,3 +1,8 @@
+import 'parking_transaction.dart';
+import 'parking_fee_calculator.dart';
+
+//::summary ต้องใช้ ข้อมูลจาก transaction และ fee::
+
 class ParkingSummary {
   int totalTransactions = 0;
   int carCount = 0;
@@ -6,4 +11,9 @@ class ParkingSummary {
   int memberCount = 0;
   int lostTicketCount = 0;
   double totalRevenue = 0;
+
+  void addTransaction(
+    ParkingTransaction transaction,
+    ParkingFeeResult feeResult,
+  ) {}
 }
