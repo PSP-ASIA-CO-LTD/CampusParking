@@ -249,4 +249,20 @@ void main() {
     expect(result.finalFee, 16);
   });
 
+  test('Member car parked for 360 minutes should cost 80 baht after cap and discount', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'car',
+      duration: 360,
+      isMember: true,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 100);
+    expect(result.finalFee, 80);
+  });
+
 }
