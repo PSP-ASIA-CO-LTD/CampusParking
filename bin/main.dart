@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../lib/parking_fee_calculator.dart';
 import '../lib/parking_transaction.dart';
+import '../lib/parking_summary.dart';
 
 //ประกาศตัวแปรไว้ นอก main() และนอก loop ทำให้ค่ามันสะสมตลอดการทำงานของโปรแกรมและไม่ถูก reset เมื่อเริ่ม transaction ใหม่(Interation3)
 int totalTransactions = 0;
@@ -128,23 +129,9 @@ void main() {
       print('Car Out');
       
       // Update daily summary
-      totalTransactions++;
+      
 
-      if (transaction.vehicleType == 'car') {
-        carCount++;
-      } else if (transaction.vehicleType == 'motorcycle') {
-        motorcycleCount++;
-      } else {
-        otherCount++;
-      }
 
-      if (transaction.isMember) {
-        memberCount++;
-      }
-
-      if (transaction.lostTicket) {
-        lostTicketCount++;
-      }
 
       totalRevenue += feeResult.finalFee;
     } else if (choice == '2') {

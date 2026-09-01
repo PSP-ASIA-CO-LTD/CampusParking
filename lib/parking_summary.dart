@@ -17,5 +17,21 @@ class ParkingSummary {
     ParkingFeeResult feeResult,
   ) {
     totalTransactions++;
+
+          if (transaction.vehicleType == 'car') {
+        carCount++;
+      } else if (transaction.vehicleType == 'motorcycle') {
+        motorcycleCount++;
+      } else {
+        otherCount++;
+      }
+
+      if (transaction.isMember) {
+        memberCount++;
+      }
+
+      if (transaction.lostTicket) {
+        lostTicketCount++;
+      }
   }
 }
