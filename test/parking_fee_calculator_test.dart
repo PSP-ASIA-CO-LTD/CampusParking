@@ -149,4 +149,20 @@ void main() {
     expect(result.normalFee, 20);
     expect(result.finalFee, 20);
   });
+
+  test('Motorcycle parked for 360 minutes should cost 50 baht', () {
+    final calculator = ParkingFeeCalculator();
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'motorcycle',
+      duration: 360,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 50);
+    expect(result.finalFee, 50);
+  });
 }
