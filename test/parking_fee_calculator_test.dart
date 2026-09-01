@@ -19,4 +19,25 @@ void main() {
     expect(result.normalFee, 0);
     expect(result.finalFee, 0);
   });
+
+  test('Car parked for 16 minutes should cost 20 baht', () {
+    final calculator = ParkingFeeCalculator();
+
+    final transaction = ParkingTransaction(
+      plate: 'ABC123',
+      vehicleType: 'car',
+      duration: 16,
+      isMember: false,
+      lostTicket: false,
+    );
+
+    final result = calculator.calculateFee(transaction);
+
+    expect(result.normalFee, 20);
+    expect(result.finalFee, 20);
+  });
+
+  test('Car parked for 60 minutes should cost 20 baht', () {
+;
+});
 }
