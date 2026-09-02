@@ -12,7 +12,7 @@
 
 --Input--
 plate
-vehicle type (car/motorcycle)
+vehicle type (car / motorcycle / other)
 parking duration(in minutes)
 member? (y/n)
 lost ticket? (y/n)
@@ -30,6 +30,7 @@ page 2 DAILY SUMMARY
 Total transactions 
 Cars                
 Motorcycles         
+Other               
 Members            
 Lost tickets        
 Total revenue     
@@ -78,6 +79,39 @@ Motorcycles
 |  241 |                 5 |     50 |
 
 
+Other (vehicle type ที่เพิ่มเข้ามาเองนอกเหนือจากโจทย์ — stretch goal: third vehicle type)
+| ระยะเวลาจอด        |         ค่าจอด         |
+|--------------------|----------------------:|
+| 0–15 นาที           |          ฟรี           |
+| 16–60 นาที          |          30           |
+| หลังจาก 60 นาที      | +30 บาทต่อทุกชั่วโมงที่เริ่มต้น|
+| สูงสุดต่อ transaction |         150 บาท       |
+
+
+| นาที  | ชั่วโมงที่คิดเงิน       | ค่าจอด  |
+| ---: | ----------------: | -----: |
+|   16 |                 1 |     30 |
+|   60 |                 1 |     30 |
+|   61 |                 2 |     60 |
+|  120 |                 2 |     60 |
+|  121 |                 3 |     90 |
+|  181 |                 4 |    120 |
+|  241 |                 5 |    150 |
+
+
+--MEMBER DISCOUNT--
+สมาชิกได้ส่วนลด 20% โดยคิดจากค่าจอด "หลังใช้ maximum cap แล้ว"
+
+
+--LOST TICKET FEE--
+| ประเภทรถ     | ค่าปรับบัตรหาย |
+|--------------|-----------: |
+| car          |         200 |
+| motorcycle   |         100 |
+| other        |         300 |
+
+ค่าปรับบัตรหายใช้แทนค่าจอดปกติทั้งหมด คือไม่คิดตามระยะเวลา ไม่ใช้ maximum cap และไม่ได้ส่วนลดสมาชิก
+
 
 ---
 
@@ -113,7 +147,6 @@ CampusParking/
 │   └── parking_summary.dart          # ยอดสะสมประจำวัน
 ├── test/
 │   └── parking_fee_calculator_test.dart
-├── analysis_options.yaml
 ├── pubspec.yaml
 └── README.md
 ```
@@ -212,7 +245,8 @@ Parking Receipt / Daily Summary
 ParkingTransaction > เก็บข้อมูลการจอด 1 ครั้ง เช่น plate, vehicleType, duration, member, lostTicket
 ParkingFeeCalculator > คำนวณค่าจอดตาม Business Rules
 ParkingFeeResult > เก็บผลลัพธ์การคำนวณ เช่น normalFee, discount, lostTicketFee, finalFee
-Daily Summary > เก็บและสะสมข้อมูล transaction/revenue
+ParkingSummary > เก็บและสะสมยอดรวมของทั้งวัน เช่น จำนวน transaction, จำนวนรถแต่ละประเภท, จำนวนสมาชิก, จำนวน lost ticket และ total revenue
+ParkingReceipt > แสดงใบเสร็จของ transaction หนึ่งรายการจากข้อมูลใน ParkingTransaction และ ParkingFeeResult
 
 ### E. Responsibility ใดควรอยู่ใน CLI?
 
@@ -318,8 +352,8 @@ Show Error           v                             |
 ## คำถามเชิงออกแบบของ Iteration 3
 
 1. **Object ใดควรรู้ยอด revenue?**
-- ParkingTransaction = ข้อมูล 1 ครั้ง
-- Daily Summary = รวมหลายครั้ง
+- `ParkingSummary` ควรเป็น object เดียวที่รู้ยอด revenue เพราะเป็นผู้รับผิดชอบข้อมูลระดับ "ทั้งวัน"
+- `ParkingTransaction` เก็บข้อมูลของการจอดเพียง 1 ครั้ง จึงไม่ควรรู้ยอดรวมของหลายรายการ
 
 2. **Object ที่คำนวณ fee ควรรู้ยอด revenue ทั้งวันหรือไม่?**
 - ไม่ควรรู้ เพราะ ParkingFeeCalculator มีหน้าที่แค่ คำนวณค่าจอดของ transaction หนึ่งรายการ และไม่ควรมี state สำหรับเก็บยอด revenue ทั้งวัน
@@ -336,7 +370,7 @@ Show Error           v                             |
 ## Constraint ที่ทำตาม
 
 ไม่เก็บ transaction ทุกตัวไว้ใน `List` — เก็บเฉพาะค่าสะสม
-(`totalTransactions`, `carCount`, `motorcycleCount`, `memberCount`, `lostTicketCount`, `totalRevenue`)
+(`totalTransactions`, `carCount`, `motorcycleCount`, `otherCount`, `memberCount`, `lostTicketCount`, `totalRevenue`)
 ใน `ParkingSummary` เพราะ summary ต้องการเพียงยอดรวมเท่านั้น
 
 ---
@@ -346,7 +380,7 @@ Show Error           v                             |
 **iteration-4: refactor and final cleanup**
 
 - ย้าย logic ที่เกี่ยวกับการคำนวณและการจัดการข้อมูลออกจาก main.dart เพื่อให้ main.dart เหลือหน้าที่หลักในการควบคุม flow ของโปรแกรมและการรับ-แสดงผล
-- แยก class ที่เกี่ยวข้องออกเป็นไฟล์ใน lib/ ตามหน้าที่ เช่น ParkingTransaction, ParkingFeeCalculator และ ParkingFeeResult เพื่อให้แต่ละส่วนมีความรับผิดชอบชัดเจน
+- แยก class ออกเป็นไฟล์ใน lib/ ตามหน้าที่ ได้แก่ ParkingTransaction, ParkingFeeCalculator, ParkingReceipt และ ParkingSummary โดย ParkingFeeResult วางไว้ในไฟล์เดียวกับ ParkingFeeCalculator เพราะเป็นผลลัพธ์ที่ผูกกับการคำนวณโดยตรง
 - เปลี่ยน field บางส่วนเป็น private และใช้ getter สำหรับการเข้าถึงข้อมูล เพื่อควบคุมการแก้ไขข้อมูลจากภายนอก object
 - เพิ่ม analysis_options.yaml เพื่อกำหนดกฎสำหรับตรวจสอบคุณภาพและรูปแบบของโค้ด
 - ใช้ dart analyze เพื่อตรวจสอบปัญหาของโค้ด และแก้ไข warning/error ที่พบจนโค้ดผ่านการตรวจสอบ
@@ -371,13 +405,31 @@ Show Error           v                             |
 - **Important fields:** ไม่มี state (stateless)
 - **Important methods:** `calculateFee(ParkingTransaction) -> ParkingFeeResult`
 - **Why this class exists:** เพื่อแยก Business Logic เรื่องการคำนวณค่าจอดออกจากส่วนที่รับ input และออกจาก ParkingTransaction ทำให้สามารถแก้หรือทดสอบกฎการคิดค่าจอดได้ง่ายขึ้น
-- **What this class should NOT be responsible for:** ✍️ ไม่ควรรับผิดชอบการรับ input การแสดงผล ไม่ควรควบคุม menu และไม่ควรเก็บยอด revenue หรือ counter ของทั้งวัน เพราะหน้าที่หลักคือคำนวณค่าจอดของ transaction ที่ส่งเข้ามา
+- **What this class should NOT be responsible for:** ไม่ควรรับผิดชอบการรับ input การแสดงผล ไม่ควรควบคุม menu และไม่ควรเก็บยอด revenue หรือ counter ของทั้งวัน เพราะหน้าที่หลักคือคำนวณค่าจอดของ transaction ที่ส่งเข้ามา
 
 
 ## Class: ParkingSummary
 
 - **Responsibility:** รับผิดชอบการเก็บและสะสมข้อมูลของ transaction ที่สำเร็จทั้งหมดในแต่ละวัน เช่น จำนวน transaction, จำนวนรถแต่ละประเภท, จำนวนสมาชิก, จำนวน lost ticket และรายได้รวม
-- **Important fields:** `totalTransactions`, `carCount`, `motorcycleCount`, `memberCount`, `lostTicketCount`, `totalRevenue`
+- **Important fields:** `totalTransactions`, `carCount`, `motorcycleCount`, `otherCount`, `memberCount`, `lostTicketCount`, `totalRevenue`
 - **Important methods:** `addTransaction(transaction, feeResult)`
-- **Why this class exists:** พราะระบบต้องรองรับหลาย transaction และต้องสรุปข้อมูลรวมของทั้งวัน จึงแยกความรับผิดชอบเรื่อง Daily Summary ออกมาโดยเฉพาะ ไม่ให้ ParkingTransaction หรือ ParkingFeeCalculator ต้องรู้เรื่องยอดรวม
-- **What this class should NOT be responsible for:** 
+- **Why this class exists:** เพราะระบบต้องรองรับหลาย transaction และต้องสรุปข้อมูลรวมของทั้งวัน จึงแยกความรับผิดชอบเรื่อง Daily Summary ออกมาโดยเฉพาะ ไม่ให้ ParkingTransaction หรือ ParkingFeeCalculator ต้องรู้เรื่องยอดรวม
+- **What this class should NOT be responsible for:** ไม่ควรรับผิดชอบการคำนวณค่าจอด และไม่ควรรับ input หรือแสดงผลกับผู้ใช้ เพราะการคำนวณเป็นหน้าที่ของ ParkingFeeCalculator ส่วนการรับและแสดงผลเป็นหน้าที่ของ CLI
+
+
+## Class: ParkingReceipt
+
+- **Responsibility:** รับผิดชอบการแสดงผลใบเสร็จของ transaction หนึ่งรายการ โดยนำข้อมูลจาก transaction และ feeResult มาแสดง
+- **Important fields:** ไม่มี state
+- **Important methods:** `printReceipt(transaction, feeResult)`
+- **Why this class exists:** เพื่อแยกส่วนการแสดง Parking Receipt ออกจาก Business Logic ทำให้ ParkingFeeCalculator ไม่ต้องรับผิดชอบเรื่องการ print และทำให้โค้ดแต่ละส่วนมีหน้าที่ชัดเจน
+- **What this class should NOT be responsible for:** ไม่ควรคำนวณค่าจอด ไม่ควรแก้ไขข้อมูลของ transaction และไม่ควรสะสมยอด revenue หรือ counter ของทั้งวัน
+
+
+## Class ที่คิดจะสร้างแต่ไม่ได้สร้าง
+
+- ตอนออกแบบเคยคิดว่าจะแยก Class เพิ่มสำหรับจัดการเรื่องต่าง ๆ เช่น ParkingManager หรือ InputValidator
+- แต่สุดท้ายไม่ได้สร้าง เพราะความรับผิดชอบของแต่ละส่วนยังไม่มากพอที่จะต้องมี Class แยก และบางส่วนสามารถจัดการใน CLI ได้โดยไม่ทำให้ Business Logic ปะปนกัน
+
+
+---
