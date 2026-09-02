@@ -353,3 +353,16 @@ Show Error           v                             |
 
 ---
 
+# Class Responsibilities
+
+
+## Class: ParkingTransaction
+
+
+- **Responsibility:** เก็บข้อมูลของการจอดรถ หนึ่ง transaction ให้ครบถ้วน
+- **Important fields:** `plate`, `vehicleType`, `duration`, `isMember`, `lostTicket` (ทั้งหมดเป็น `final`)
+- **Important methods:** มีเพียง constructor
+- **Why this class exists:** เพื่อรวมข้อมูลที่เกี่ยวข้องกับการจอดรถหนึ่งครั้งไว้ใน object เดียว ทำให้สามารถส่งข้อมูล transaction ไปให้ส่วนอื่น เช่น ParkingFeeCalculator ได้ง่ายขึ้น
+- **What this class should NOT be responsible for:** ไม่ควรรับผิดชอบเรื่องการคำนวณราคา ไม่ควรรู้ราคาค่าจอด และไม่ควรรู้ยอดรวมของทั้งวัน เพราะหน้าที่ของมันคือเก็บข้อมูลของ transaction หนึ่งครั้งเท่านั้น
+
+
