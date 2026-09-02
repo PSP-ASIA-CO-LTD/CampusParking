@@ -358,7 +358,6 @@ Show Error           v                             |
 
 ## Class: ParkingTransaction
 
-
 - **Responsibility:** เก็บข้อมูลของการจอดรถ หนึ่ง transaction ให้ครบถ้วน
 - **Important fields:** `plate`, `vehicleType`, `duration`, `isMember`, `lostTicket` (ทั้งหมดเป็น `final`)
 - **Important methods:** มีเพียง constructor
@@ -366,3 +365,19 @@ Show Error           v                             |
 - **What this class should NOT be responsible for:** ไม่ควรรับผิดชอบเรื่องการคำนวณราคา ไม่ควรรู้ราคาค่าจอด และไม่ควรรู้ยอดรวมของทั้งวัน เพราะหน้าที่ของมันคือเก็บข้อมูลของ transaction หนึ่งครั้งเท่านั้น
 
 
+## Class: ParkingFeeCalculator
+
+- **Responsibility:** คำนวณค่าจอดของ ParkingTransaction หนึ่งรายการตาม Business Rules และคืนผลลัพธ์เป็น ParkingFeeResult
+- **Important fields:** ไม่มี state (stateless)
+- **Important methods:** `calculateFee(ParkingTransaction) -> ParkingFeeResult`
+- **Why this class exists:** เพื่อแยก Business Logic เรื่องการคำนวณค่าจอดออกจากส่วนที่รับ input และออกจาก ParkingTransaction ทำให้สามารถแก้หรือทดสอบกฎการคิดค่าจอดได้ง่ายขึ้น
+- **What this class should NOT be responsible for:** ✍️ ไม่ควรรับผิดชอบการรับ input การแสดงผล ไม่ควรควบคุม menu และไม่ควรเก็บยอด revenue หรือ counter ของทั้งวัน เพราะหน้าที่หลักคือคำนวณค่าจอดของ transaction ที่ส่งเข้ามา
+
+
+## Class: ParkingSummary
+
+- **Responsibility:** รับผิดชอบการเก็บและสะสมข้อมูลของ transaction ที่สำเร็จทั้งหมดในแต่ละวัน เช่น จำนวน transaction, จำนวนรถแต่ละประเภท, จำนวนสมาชิก, จำนวน lost ticket และรายได้รวม
+- **Important fields:** `totalTransactions`, `carCount`, `motorcycleCount`, `memberCount`, `lostTicketCount`, `totalRevenue`
+- **Important methods:** `addTransaction(transaction, feeResult)`
+- **Why this class exists:** พราะระบบต้องรองรับหลาย transaction และต้องสรุปข้อมูลรวมของทั้งวัน จึงแยกความรับผิดชอบเรื่อง Daily Summary ออกมาโดยเฉพาะ ไม่ให้ ParkingTransaction หรือ ParkingFeeCalculator ต้องรู้เรื่องยอดรวม
+- **What this class should NOT be responsible for:** 
