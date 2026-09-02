@@ -8,8 +8,14 @@
       "version": "1.0.0",
       "dependencies": [],
       "devDependencies": [
+        "lints",
         "test"
       ]
+    },
+    {
+      "name": "lints",
+      "version": "6.1.0",
+      "dependencies": []
     },
     {
       "name": "test",

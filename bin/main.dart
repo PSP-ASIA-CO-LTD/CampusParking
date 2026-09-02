@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import '../lib/parking_fee_calculator.dart';
-import '../lib/parking_transaction.dart';
-import '../lib/parking_summary.dart';
-import '../lib/parking_receipt.dart';
+import 'package:campus_parking/parking_fee_calculator.dart';
+import 'package:campus_parking/parking_transaction.dart';
+import 'package:campus_parking/parking_summary.dart';
+import 'package:campus_parking/parking_receipt.dart';
 
 void main() {
   ParkingFeeCalculator feeCalculator = ParkingFeeCalculator();

@@ -1,0 +1,3 @@
+# กำหนดกฎที่ใช้ตรวจโค้ดของโปรเจกต์นี้ (dart analyze จะอ่านไฟล์นี้อัตโนมัติ)
+# ใช้ชุดกฎ recommended ของทีม Dart เป็นฐาน ตามแนวทาง Effective Dart
+include: package:lints/recommended.yaml

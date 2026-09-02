@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
-import '../lib/parking_fee_calculator.dart';
-import '../lib/parking_transaction.dart';
+import 'package:campus_parking/parking_fee_calculator.dart';
+import 'package:campus_parking/parking_transaction.dart';
 
 void main() {
   //car test

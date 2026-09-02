@@ -147,6 +147,7 @@ CampusParking/
 │   └── parking_summary.dart          # ยอดสะสมประจำวัน
 ├── test/
 │   └── parking_fee_calculator_test.dart
+├── analysis_options.yaml
 ├── pubspec.yaml
 └── README.md
 ```
