@@ -23,8 +23,20 @@ void main() {
 
     if (choice == '1') {
       // Plate
-      stdout.write('Enter plate number: ');
-      String plate = stdin.readLineSync() ?? '';
+      // trim() ก่อนตรวจ ถ้าเว้นวรรคล้วน ๆ ก็ถือว่ายังไม่ได้กรอก
+      String plate;
+
+      while (true) {
+        stdout.write('Enter plate number: ');
+        String input = (stdin.readLineSync() ?? '').trim();
+
+        if (input.isNotEmpty) {
+          plate = input;
+          break;
+        }
+
+        print('Plate cannot be empty. Please try again.');
+      }
 
       print('Plate: $plate');
 
