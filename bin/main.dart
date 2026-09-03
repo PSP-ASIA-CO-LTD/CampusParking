@@ -5,6 +5,10 @@ import 'package:campus_parking/parking_transaction.dart';
 import 'package:campus_parking/parking_summary.dart';
 import 'package:campus_parking/parking_receipt.dart';
 
+// คำสั่งที่ผู้ใช้พิมพ์เพื่อยกเลิก transaction ที่กำลังกรอกอยู่
+// เก็บเป็นค่าคงที่จุดเดียว ถ้าอยากเปลี่ยนคำสั่งจะได้แก้ที่เดียว
+const String cancelCommand = 'cancel';
+
 void main() {
   ParkingFeeCalculator feeCalculator = ParkingFeeCalculator();
   ParkingSummary summary = ParkingSummary();
@@ -22,135 +26,20 @@ void main() {
     String? choice = stdin.readLineSync()?.trim();
 
     if (choice == '1') {
-      // Plate
-      // trim() ก่อนตรวจ ถ้าเว้นวรรคล้วน ๆ ก็ถือว่ายังไม่ได้กรอก
-      String plate;
+      ParkingTransaction? transaction = readTransaction();
 
-      while (true) {
-        stdout.write('Enter plate number: ');
-        String input = (stdin.readLineSync() ?? '').trim();
-
-        if (input.isNotEmpty) {
-          plate = input;
-          break;
-        }
-
-        print('Plate cannot be empty. Please try again.');
+      // ยกเลิกกลางคัน: ไม่คำนวณ ไม่ออกใบเสร็จ และไม่นับเข้า daily summary
+      if (transaction == null) {
+        print('Transaction cancelled.');
+        continue;
       }
 
-      print('Plate: $plate');
-
-      // Vehicle Type
-      // รับเฉพาะ car / motorcycle / other เท่านั้น
-      // input อื่นถือว่าไม่ถูกต้อง ให้ถามใหม่แทนการเดาประเภทรถให้ผู้ใช้
-      String vehicleType;
-
-      while (true) {
-        print('Which vehicle type?');
-        stdout.write('Car or Motorcycle or Other: ');
-
-        // ?? '' กัน null จาก readLineSync
-        String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
-
-        if (input == 'car' || input == 'motorcycle' || input == 'other') {
-          vehicleType = input;
-          break;
-        }
-
-        print('Invalid vehicle type. Please enter car, motorcycle or other.');
-      }
-
-      if (vehicleType == 'car') {
-        print('Vehicle: Car');
-      } else if (vehicleType == 'motorcycle') {
-        print('Vehicle: Motorcycle');
-      } else {
-        print('Vehicle: Other');
-      }
-
-      // Duration
-      int duration;
-
-      while (true) {
-        stdout.write('Parking duration (min): ');
-        String? durationInput = stdin.readLineSync();
-
-        int? parsedDuration = int.tryParse(durationInput?.trim() ?? '');
-
-        if (parsedDuration == null) {
-          print('Invalid number. Please try again.');
-          continue;
-        }
-
-        if (parsedDuration < 0) {
-          print('Duration cannot be negative.');
-          continue;
-        }
-
-        duration = parsedDuration;
-        break;
-      }
-
-      print('Duration: $duration minutes');
-
-      // Member validation
-      bool isMember = false;
-
-      while (true) {
-        stdout.write('Member? (y/n): ');
-        String? input = stdin.readLineSync()?.trim().toLowerCase();
-
-        if (input == 'y') {
-          isMember = true;
-          break;
-        }
-
-        if (input == 'n') {
-          isMember = false;
-          break;
-        }
-
-        print('Please enter y or n.');
-      }
-
-      // Lost ticket validation
-      bool lostTicket = false;
-
-      while (true) {
-        stdout.write('Lost ticket? (y/n): ');
-        String? input = stdin.readLineSync()?.trim().toLowerCase();
-
-        if (input == 'y') {
-          lostTicket = true;
-          break;
-        }
-
-        if (input == 'n') {
-          lostTicket = false;
-          break;
-        }
-
-        print('Please enter y or n.');
-      }
-
-      // Store transaction data
-      ParkingTransaction transaction = ParkingTransaction(
-        plate: plate,
-        vehicleType: vehicleType,
-        duration: duration,
-        isMember: isMember,
-        lostTicket: lostTicket,
-      );
-
-      // Calculate fee
       ParkingFeeResult feeResult = feeCalculator.calculateFee(transaction);
-      //receipt
       receipt.printReceipt(transaction, feeResult);
 
-      print('Final fee: ${feeResult.finalFee} baht');
       print('Car Out');
 
-      // Update daily summary
+      // นับเข้ายอดสะสมเมื่อรายการสำเร็จแล้วเท่านั้น
       summary.addTransaction(transaction, feeResult);
     } else if (choice == '2') {
       print('========================================');
@@ -170,5 +59,121 @@ void main() {
     } else {
       print('Invalid choice. Please try again.');
     }
+  }
+}
+
+// รวบรวมข้อมูลของ transaction หนึ่งรายการจากผู้ใช้
+// คืน null ถ้าผู้ใช้ยกเลิกที่ขั้นตอนใดก็ตาม
+ParkingTransaction? readTransaction() {
+  String? plate = readPlate();
+  if (plate == null) return null;
+
+  String? vehicleType = readVehicleType();
+  if (vehicleType == null) return null;
+
+  int? duration = readDuration();
+  if (duration == null) return null;
+
+  bool? isMember = readYesNo('Member?');
+  if (isMember == null) return null;
+
+  bool? lostTicket = readYesNo('Lost ticket?');
+  if (lostTicket == null) return null;
+
+  return ParkingTransaction(
+    plate: plate,
+    vehicleType: vehicleType,
+    duration: duration,
+    isMember: isMember,
+    lostTicket: lostTicket,
+  );
+}
+
+/// อ่านทะเบียนรถ ต้องไม่เป็นค่าว่าง
+/// trim() ก่อนตรวจ ถ้ากรอกเว้นวรรคล้วน ๆ ก็ถือว่ายังไม่ได้กรอก
+String? readPlate() {
+  while (true) {
+    stdout.write('Enter plate number (type "$cancelCommand" to cancel): ');
+    String input = (stdin.readLineSync() ?? '').trim();
+
+    if (input.toLowerCase() == cancelCommand) {
+      return null;
+    }
+
+    if (input.isNotEmpty) {
+      return input;
+    }
+
+    print('Plate cannot be empty. Please try again.');
+  }
+}
+
+/// อ่านประเภทรถ รับเฉพาะ car / motorcycle / other เท่านั้น
+/// input อื่นถือว่าไม่ถูกต้อง ให้ถามใหม่แทนการเดาประเภทรถให้ผู้ใช้
+String? readVehicleType() {
+  while (true) {
+    print('Which vehicle type?');
+    stdout.write(
+      'Car or Motorcycle or Other (type "$cancelCommand" to cancel): ',
+    );
+
+    // ?? '' กัน null จาก readLineSync แล้วค่อย trim/toLowerCase
+    // เพื่อให้ ' CAR ' กับ 'car' ถือเป็นค่าเดียวกัน
+    String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
+
+    if (input == cancelCommand) {
+      return null;
+    }
+
+    if (input == 'car' || input == 'motorcycle' || input == 'other') {
+      return input;
+    }
+
+    print('Invalid vehicle type. Please enter car, motorcycle or other.');
+  }
+}
+
+// ใช้ tryParse เพราะ input จากผู้ใช้อาจไม่ใช่ตัวเลข ถ้าใช้ parse โปรแกรมจะพัง
+int? readDuration() {
+  while (true) {
+    stdout.write('Parking duration (min) (type "$cancelCommand" to cancel): ');
+    String input = (stdin.readLineSync() ?? '').trim();
+
+    if (input.toLowerCase() == cancelCommand) {
+      return null;
+    }
+
+    int? parsedDuration = int.tryParse(input);
+
+    if (parsedDuration == null) {
+      print('Invalid number. Please try again.');
+      continue;
+    }
+
+    if (parsedDuration < 0) {
+      print('Duration cannot be negative.');
+      continue;
+    }
+
+    return parsedDuration;
+  }
+}
+
+bool? readYesNo(String question) {
+  while (true) {
+    stdout.write('$question (y/n, type "$cancelCommand" to cancel): ');
+    String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
+
+    if (input == cancelCommand) {
+      return null;
+    }
+    if (input == 'y') {
+      return true;
+    }
+    if (input == 'n') {
+      return false;
+    }
+
+    print('Please enter y or n.');
   }
 }
