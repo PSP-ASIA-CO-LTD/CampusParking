@@ -29,10 +29,24 @@ void main() {
       print('Plate: $plate');
 
       // Vehicle Type
-      print('Which vehicle type?');
-      print('Car or Motorcycle or Other');
+      // รับเฉพาะ car / motorcycle / other เท่านั้น
+      // input อื่นถือว่าไม่ถูกต้อง ให้ถามใหม่แทนการเดาประเภทรถให้ผู้ใช้
+      String vehicleType;
 
-      String vehicleType = (stdin.readLineSync() ?? '').trim().toLowerCase();
+      while (true) {
+        print('Which vehicle type?');
+        stdout.write('Car or Motorcycle or Other: ');
+
+        // ?? '' กัน null จาก readLineSync
+        String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
+
+        if (input == 'car' || input == 'motorcycle' || input == 'other') {
+          vehicleType = input;
+          break;
+        }
+
+        print('Invalid vehicle type. Please enter car, motorcycle or other.');
+      }
 
       if (vehicleType == 'car') {
         print('Vehicle: Car');
