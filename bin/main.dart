@@ -37,10 +37,10 @@ void main() {
       ParkingFeeResult feeResult = feeCalculator.calculateFee(transaction);
       receipt.printReceipt(transaction, feeResult);
 
-      print('Car Out');
-
-      // นับเข้ายอดสะสมเมื่อรายการสำเร็จแล้วเท่านั้น
+      // บันทึกว่า transaction นี้สำเร็จและเพิ่มยอดสะสม
       summary.addTransaction(transaction, feeResult);
+      //เป็นขั้นตอนสุดท้าย รถสามารถออกได้จย้า
+      print('Car Out');
     } else if (choice == '2') {
       print('========================================');
       print('DAILY SUMMARY');
