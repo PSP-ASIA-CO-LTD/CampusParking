@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 import 'package:campus_parking/parking_fee_calculator.dart';
 import 'package:campus_parking/parking_transaction.dart';
 
+// Boundary cases (ค่าจอดปกติ)
 void main() {
   //car test
   test('Car parked for 15 minutes should be free', () {
