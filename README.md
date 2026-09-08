@@ -503,3 +503,43 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 
 ---
 
+# Final Reflection
+
+
+## Q1 — Iteration ใดทำให้ต้องเปลี่ยน design มากที่สุด เพราะอะไร?
+
+
+> Iteration 4 ทำให้ต้องเปลี่ยน design มากที่สุด เพราะเป็นช่วงที่ไม่ได้เพิ่มแค่ feature ใหม่ แต่ต้องกลับมาปรับโครงสร้างของ code เดิมให้เป็นระเบียบมากขึ้น เช่น แยก logic ออกจาก main.dart และแยก responsibility ของแต่ละ class ให้ชัดเจนขึ้น จากเดิมที่ logic หลายส่วนอยู่รวมกันใน main.dart จึงต้อง refactor และจัดโครงสร้างใหม่
+
+## Q2 — มี code ส่วนใดที่ตอนแรกอยู่ใน `main.dart` แล้วภายหลังย้ายออก? เพราะอะไร?
+
+
+> ตอนแรก main.dart มีทั้งการรับ input, validation, การคำนวณค่าจอด, การจัดการ transaction และการสรุปผล ทำให้ main() ยาวมากๆ เลยต้องย้าย logic เหล่านี้ออกไปเป็น class ที่รับผิดชอบเฉพาะด้าน       main.dart เลยทำหน้าที่ควบคุม flow ของโปรแกรมเป็นหลัก และทำให้แต่ละส่วนสามารถเข้าใจและทดสอบได้ง่ายขึ้น
+
+
+
+## Q3 — class ใดมี responsibility ชัดที่สุดในระบบ?
+
+
+> ParkingFeeCalculator มี responsibility ที่ชัดที่สุด เพราะหน้าที่หลักของ class นี้คือคำนวณค่าจอดรถจากข้อมูลของ transaction โดยจัดการ business rules เช่น ระยะเวลาจอด, ประเภทรถ, maximum fee, member discount และ lost ticket
+
+
+## Q4 — มี class ใดที่คิดจะสร้าง แต่สุดท้ายตัดสินใจไม่สร้าง? เพราะอะไร?
+
+
+> ใตอนแรกมีแนวคิดที่จะสร้าง InputValidator สำหรับตรวจความถูกต้องของ input และ ParkingManager สำหรับควบคุม flow ของโปรแกรม แต่สุดท้ายไม่ได้สร้างทั้งสองตัว เพราะ validation ที่มีอยู่ยังไม่ซับซ้อนพอที่จะต้องมี class แยก และ main.dart ก็ทำหน้าที่ควบคุม flow ได้อยู่แล้วโดยไม่มี business logic ปนอยู่ การสร้าง class เพิ่มในตอนนี้จะเป็น abstraction ที่ยังไม่มีใครต้องการใช้ เลยเลือกให้ validation ของ input อยู่ในส่วน CLI และให้ business logic อยู่ใน class ที่รับผิดชอบเรื่องนั้นโดยตรงแทน
+
+
+## Q5 — ถ้าต้องเพิ่ม `bus` เป็น vehicle type ใหม่ design ปัจจุบันรองรับได้ง่ายหรือยาก?
+
+
+> Design ปัจจุบันสามารถเพิ่มได้ แต่ยังไม่ถือว่าง่ายมาก เพราะ vehicle type ยังถูกตรวจสอบและนำไปใช้ในหลายจุด เช่น การคำนวณค่าจอดและการแสดงผล summary ดังนั้นถ้าเพิ่ม bus จะต้องแก้หลายจุดที่เกี่ยวข้องกับ vehicle type เทียบกับ Reflection หลัง Iteration 1 จะเห็นว่าการออกแบบยังมี room for improvement หากในอนาคตมี vehicle type เพิ่มขึ้นหลายประเภท อาจพิจารณาใช้ enum หรือแยก vehicle-specific rules เพื่อให้การเพิ่ม type ใหม่กระทบ code เดิมน้อยลง
+
+
+## Q6 — ถ้าต้องบันทึก transaction ย้อนหลัง 1,000 รายการ requirement ใหม่จะกระทบ architecture ตรงไหน?
+
+
+> ที่ต้องเปลี่ยนหลัก ๆ คือ ParkingSummary เพราะปัจจุบันเก็บเฉพาะข้อมูลสรุป เช่น จำนวน transaction และรายได้รวม ไม่ได้เก็บ transaction แต่ละรายการไว้
+> ถ้าต้องการดูข้อมูลย้อนหลัง 1,000 รายการ จะต้องเปลี่ยนให้มีส่วนที่เก็บ transaction ทั้งหมด เช่น List<ParkingTransaction> และอาจต้องแยก responsibility ระหว่างการเก็บข้อมูล transaction กับการคำนวณ summary ให้ชัดเจนขึ้น ถ้าข้อมูลต้องคงอยู่หลังจากปิดโปรแกรมด้วย อาจต้องเพิ่ม persistence layer เช่น file หรือ database ซึ่งจะเป็นการเปลี่ยน architecture มากกว่าการเพิ่มแค่ field ใน ParkingSummary
+
+
