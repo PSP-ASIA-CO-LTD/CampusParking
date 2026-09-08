@@ -1,0 +1,8 @@
+# แคชและไฟล์ที่ Dart สร้างขึ้นเอง สร้างใหม่ได้ด้วย dart pub get
+.dart_tool/
+build/
+
+# ไฟล์ช่วยงานส่วนตัว ไม่ใช่ส่วนหนึ่งของงานที่ส่ง
+DEMO.md
+SUMMARY.md
+run_tests.sh

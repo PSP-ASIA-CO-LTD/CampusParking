@@ -2,6 +2,34 @@
 
 โปรแกรม CLI สำหรับเจ้าหน้าที่ลานจอดรถ ใช้คำนวณค่าจอดรถ ออกใบเสร็จ และสรุปยอดประจำวันแบบ iterative 4 รอบ
 
+## สรุปย่อ
+
+| หัวข้อ | รายละเอียด |
+|---|---|
+| ทำอะไร | โปรแกรม CLI คำนวณค่าจอดรถ ออกใบเสร็จ และสรุปยอดประจำวัน |
+| รันยังไง | `dart run bin/main.dart` |
+| รองรับรถ | car / motorcycle / other |
+| กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, ค่าปรับบัตรหาย |
+| โครงสร้าง | `bin/main.dart` 52 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 4 class แยกความรับผิดชอบ |
+| การทดสอบ | 19 unit test อัตโนมัติ (`dart test`) + 42 manual test case |
+| คุณภาพโค้ด | `dart format` ผ่าน • `dart analyze` ไม่มี issue • GitHub Actions รันเทสทุกครั้งที่ push |
+
+## สารบัญ
+
+- [Project Overview](#project-overview) — โจทย์ ข้อมูลเข้า-ออก และกฎการคิดเงิน
+- [How to Run](#how-to-run) — คำสั่งรันและโครงสร้างโปรเจกต์
+- [Iteration 1 Design](#iteration-1-design) — การออกแบบรอบแรก
+- [Iteration 2 Changes](#iteration-2-changes) — เพิ่ม validation และกฎพิเศษ
+- [Iteration 3 Changes](#iteration-3-changes) — หลาย transaction และยอดสรุป
+- [Iteration 4 Refactoring](#iteration-4-refactoring) — จัดโครงสร้างและคุณภาพโค้ด
+- [Class Responsibilities](#class-responsibilities) — หน้าที่ของแต่ละ class
+- [Business Rule Precedence](#business-rule-precedence) — ลำดับของกฎและเหตุผล
+- [Dart Documentation Researched](#dart-documentation-researched) — เอกสารที่ค้นและนำมาใช้
+- [Effective Dart Guidelines Used](#effective-dart-guidelines-used) — แนวปฏิบัติที่นำมาใช้จริง
+- [Test Matrix](#test-matrix) — ผลทดสอบ 42 เคส
+
+เอกสารประกอบเพิ่มเติมอยู่ในโฟลเดอร์ [`docs/`](docs/)
+
 ---
 
 # Project Overview
@@ -36,81 +64,18 @@ Lost tickets
 Total revenue     
 
 --BUSINESS RULES--
-car
-| ระยะเวลาจอด        |         ค่าจอด         |
-|--------------------|----------------------:|
-| 0–15 นาที           |          ฟรี           |
-| 16–60 นาที          |          20           |
-| หลังจาก 60 นาที      | +20 บาทต่อทุกชั่วโมงที่เริ่มต้น|
-| สูงสุดต่อ transaction |         100 บาท       |
 
+| ประเภทรถ | 0–15 นาที | 16–60 นาที | หลังจากนั้น | สูงสุดต่อ transaction |
+|---|---|---:|---|---:|
+| car | ฟรี | 20 | +20 ต่อทุกชั่วโมงที่เริ่มต้น | 100 |
+| motorcycle | ฟรี | 10 | +10 ต่อทุกชั่วโมงที่เริ่มต้น | 50 |
+| other | ฟรี | 30 | +30 ต่อทุกชั่วโมงที่เริ่มต้น | 150 |
 
-| นาที  | ชั่วโมงที่คิดเงิน       | ค่าจอด  |
-| ---: | ----------------: | -----: |
-|   16 |                 1 |     20 |
-|   60 |                 1 |     20 |
-|   61 |                 2 |     40 |
-|  120 |                 2 |     40 |
-|  121 |                 3 |     60 |
-|  180 |                 3 |     60 |
-|  181 |                 4 |     80 |
-|  240 |                 4 |     80 |
-|  241 |                 5 |    100 |
+- **สมาชิก** ลด 20% คิดจากค่าจอดหลังใช้เพดานราคาแล้ว
+- **บัตรหาย** คิดค่าปรับ car 200 / motorcycle 100 / other 300 แทนค่าจอดทั้งหมด ไม่คิดตามเวลา ไม่ใช้เพดาน และไม่ลดสมาชิก
+- `other` เป็นประเภทที่เพิ่มเข้ามาเองนอกเหนือจากโจทย์ (stretch goal)
 
-Motorcycles 
-| ระยะเวลาจอด        |         ค่าจอด         |
-|--------------------|----------------------:|
-| 0–15 นาที           |          ฟรี           |
-| 16–60 นาที          |          10           |
-| หลังจาก 60 นาที      | +10 บาทต่อทุกชั่วโมงที่เริ่มต้น|
-| สูงสุดต่อ transaction |          50 บาท       |
-
-
-| นาที  | ชั่วโมงที่คิดเงิน       | ค่าจอด  |
-| ---: | ----------------: | -----: |
-|   16 |                 1 |     10 |
-|   60 |                 1 |     10 |
-|   61 |                 2 |     20 |
-|  120 |                 2 |     20 |
-|  121 |                 3 |     30 |
-|  180 |                 3 |     30 |
-|  181 |                 4 |     40 |
-|  240 |                 4 |     40 |
-|  241 |                 5 |     50 |
-
-
-Other (vehicle type ที่เพิ่มเข้ามาเองนอกเหนือจากโจทย์ — stretch goal: third vehicle type)
-| ระยะเวลาจอด        |         ค่าจอด         |
-|--------------------|----------------------:|
-| 0–15 นาที           |          ฟรี           |
-| 16–60 นาที          |          30           |
-| หลังจาก 60 นาที      | +30 บาทต่อทุกชั่วโมงที่เริ่มต้น|
-| สูงสุดต่อ transaction |         150 บาท       |
-
-
-| นาที  | ชั่วโมงที่คิดเงิน       | ค่าจอด  |
-| ---: | ----------------: | -----: |
-|   16 |                 1 |     30 |
-|   60 |                 1 |     30 |
-|   61 |                 2 |     60 |
-|  120 |                 2 |     60 |
-|  121 |                 3 |     90 |
-|  181 |                 4 |    120 |
-|  241 |                 5 |    150 |
-
-
---MEMBER DISCOUNT--
-สมาชิกได้ส่วนลด 20% โดยคิดจากค่าจอด "หลังใช้ maximum cap แล้ว"
-
-
---LOST TICKET FEE--
-| ประเภทรถ     | ค่าปรับบัตรหาย |
-|--------------|-----------: |
-| car          |         200 |
-| motorcycle   |         100 |
-| other        |         300 |
-
-ค่าปรับบัตรหายใช้แทนค่าจอดปกติทั้งหมด คือไม่คิดตามระยะเวลา ไม่ใช้ maximum cap และไม่ได้ส่วนลดสมาชิก
+📄 ตารางฉบับเต็มพร้อมตัวอย่างการคิดเงินทีละช่วงเวลา: **[docs/business-rules.md](docs/business-rules.md)**
 
 
 ---
@@ -160,72 +125,7 @@ CampusParking/
 
 ::จะยังไม่มีการนำเอาส่วนลดสมาชิกมาลดเพราะเป็นการคำนวณค่าที่จอดรถเบื้องต้น
 
-```text
-Flow Chart
-            car in <----------------------------------+
-               |                                      |
-               |                                      |
-               v                                      |
-           Read Plate                                 |
-               |                                      |
-               |                                      |
-               v                                      |
-      Which vehicle type                              |
-               |                                      |
-    +----------+-----------+                          |
-    |                      |                          |
-   car                 motorcycle                     |                 
-     \                    /                           |
-      \                  /                            |
-       \                /                             |                
-        \              /                              |
-         \            /                               |
-          \          /                                |
-           \        /                                 |
-            \      /                                  |  
-             \    /                                   |
-              \  /                                    |
-               v                                      |  
-               |                                      |
-               v                                      |
-      Parking duration(min)                           |
-               |                                      |                   
-               |                                      |
-               v                                      |
-           Final fee                                  | 
-               |                                      |
-               |                                      |
-               v                                      | 
-            Car Out                                   |
-               |                                      |
-               |                                      |
-               v                                      |
-          New vehicle?                                |   
-    +----------+-----------+                          |
-    |                      |                          |
-    No                    Yes                         |
-    |                      |__________________________+
-   Exit                   
-
-
-   ลำดับโครงสร้าง
- 1. Car In
- 2. Read Plate
- 3. Vehicle Type
- 4. Parking Duration
- 5. Final Fee
- 6. Car Out
- 7. New Vehicle? / Exit
-
- Step 1 - Do forever loop << ต้องทำซ้ำจนกว่าจะ exit
- Step 2 — Read Plate
- Step 3 - Vehicle Type
- Step 4 — Parking Duration
- Step 5 - Declare Fee
- Step 6 - Calculate parking fee
- Step 7 - Car and Motorcycle
- Step 8 - Final Fee
-```
+📄 Flow chart ของ iteration นี้: **[docs/iteration-1-flowchart.md](docs/iteration-1-flowchart.md)**
 
 ## คำถามก่อนเขียน implementation
 
@@ -275,61 +175,7 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 
 **iteration-2: validation and special rules**
 
-```text
-
-            +--------------------------------------+
-            |                                      |
-            v                                      |
-          Car In                                   |
-            |                                      |
-            v                                      |
-        Read Plate                                 |
-            |                                      |
-            v                                      |
-  +-> Validate Plate?                              |
-  |     /          \                               |
-  |    No           Yes                            |
-  |    |             |                             |
-Show Error           v                             |
-               Which vehicle type                  |
-                     |                             | 
-                     v                             |
-        +-----> Validate Vehicle?                  |
-        |        /          \                      |
-        |      No           Yes                    |
-        |      |           /   \                   |
-       Show Error         /     \                  |
-                       Car       Motorcycle        |
-                         \          /              |
-                          \        /               |
-                           v      v                |
-                       Parking Duration            |
-                              |                    |
-                              v                    |
-                +----> Validate Duration?          |
-                |        /            \            |
-                |      No              Yes         |
-                |      |                |          |
-               Show Error               |          |
-                                        v          |
-                                 Special Rules     |
-                                    (member)       |
-                                       |           |
-                                       |           |
-                                       |           |
-                                       v           |
-                                  Final Fee        |
-                                       |           |
-                                       v           |
-                                    Car Out        |
-                                       |           |
-                                       v           |
-                                 New vehicle?      |
-                                  /        \       |
-                                No          Yes    |
-                                |            |     |
-                               Exit          +-----+
-```
+📄 Flow chart ของ iteration นี้: **[docs/iteration-2-flowchart.md](docs/iteration-2-flowchart.md)**
 
 ## สิ่งที่เปลี่ยนจาก Iteration 1
 
@@ -564,7 +410,7 @@ END IF
 
 # Test Matrix
 
-รวม 39 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
+รวม 42 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
 
 ## วิธีรัน
 
@@ -647,6 +493,9 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 | T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | | |
 | T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | | |
 | T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | | |
+| T40 | other, 30 นาที | 30.00 | | |
+| T41 | other, 500 นาที | 150.00 (cap) | | |
+| T42 | other, lost ticket | 300.00 | | |
 
 ## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
 

@@ -97,6 +97,9 @@ echo
 run_case T37 "plate empty"              "Plate cannot be empty, ask again" '1\n\nABC123\ncar\n30\nn\nn\n3\n'
 run_case T38 "cancel at the first field" "Transaction cancelled, summary 0" '1\ncancel\n2\n3\n'
 run_case T39 "input runs out (no exit command)" "cancels and exits cleanly" '1\nABC123\ncar\n'
+run_case T40 "other, 30 min"          "Final fee 30.00"  '1\nABC123\nother\n30\nn\nn\n3\n'
+run_case T41 "other, 500 min (cap)"   "Final fee 150.00" '1\nABC123\nother\n500\nn\nn\n3\n'
+run_case T42 "other, lost ticket"     "Final fee 300.00" '1\nABC123\nother\n30\nn\ny\n3\n'
 
 echo "===================================================================="
 echo "Done. Compare each Expected line with the output below it."
