@@ -25,6 +25,12 @@ void main() {
     stdout.write('Select: ');
     String? choice = stdin.readLineSync()?.trim();
 
+    // อ่านค่าไม่ได้แล้ว แปลว่าไม่มีใครป้อนข้อมูลต่อ จึงปิดโปรแกรม
+    // ถ้าไม่ดักไว้ จะวนพิมพ์ Invalid choice ไม่รู้จบ
+    if (choice == null) {
+      break;
+    }
+
     if (choice == '1') {
       ParkingTransaction? transaction = readTransaction();
 
@@ -94,7 +100,15 @@ ParkingTransaction? readTransaction() {
 String? readPlate() {
   while (true) {
     stdout.write('Enter plate number (type "$cancelCommand" to cancel): ');
-    String input = (stdin.readLineSync() ?? '').trim();
+    String? line = stdin.readLineSync();
+
+    // อ่านค่าไม่ได้แล้ว แปลว่าไม่มีใครกรอกต่อ ต่างจากการกด Enter เปล่า
+    // ที่ยังได้ค่าว่างกลับมา กรณีนี้จึงถือว่ายกเลิกรายการ
+    if (line == null) {
+      return null;
+    }
+
+    String input = line.trim();
 
     if (input.toLowerCase() == cancelCommand) {
       return null;
@@ -117,9 +131,16 @@ String? readVehicleType() {
       'Car or Motorcycle or Other (type "$cancelCommand" to cancel): ',
     );
 
-    // ?? '' กัน null จาก readLineSync แล้วค่อย trim/toLowerCase
-    // เพื่อให้ ' CAR ' กับ 'car' ถือเป็นค่าเดียวกัน
-    String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
+    String? line = stdin.readLineSync();
+
+    // อ่านค่าไม่ได้แล้ว แปลว่าไม่มีใครกรอกต่อ ต่างจากการกด Enter เปล่า
+    // ที่ยังได้ค่าว่างกลับมา กรณีนี้จึงถือว่ายกเลิกรายการ
+    if (line == null) {
+      return null;
+    }
+
+    // trim/toLowerCase เพื่อให้ ' CAR ' กับ 'car' ถือเป็นค่าเดียวกัน
+    String input = line.trim().toLowerCase();
 
     if (input == cancelCommand) {
       return null;
@@ -137,7 +158,15 @@ String? readVehicleType() {
 int? readDuration() {
   while (true) {
     stdout.write('Parking duration (min) (type "$cancelCommand" to cancel): ');
-    String input = (stdin.readLineSync() ?? '').trim();
+    String? line = stdin.readLineSync();
+
+    // อ่านค่าไม่ได้แล้ว แปลว่าไม่มีใครกรอกต่อ ต่างจากการกด Enter เปล่า
+    // ที่ยังได้ค่าว่างกลับมา กรณีนี้จึงถือว่ายกเลิกรายการ
+    if (line == null) {
+      return null;
+    }
+
+    String input = line.trim();
 
     if (input.toLowerCase() == cancelCommand) {
       return null;
@@ -162,7 +191,15 @@ int? readDuration() {
 bool? readYesNo(String question) {
   while (true) {
     stdout.write('$question (y/n, type "$cancelCommand" to cancel): ');
-    String input = (stdin.readLineSync() ?? '').trim().toLowerCase();
+    String? line = stdin.readLineSync();
+
+    // อ่านค่าไม่ได้แล้ว แปลว่าไม่มีใครกรอกต่อ ต่างจากการกด Enter เปล่า
+    // ที่ยังได้ค่าว่างกลับมา กรณีนี้จึงถือว่ายกเลิกรายการ
+    if (line == null) {
+      return null;
+    }
+
+    String input = line.trim().toLowerCase();
 
     if (input == cancelCommand) {
       return null;
