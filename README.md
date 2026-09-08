@@ -435,6 +435,7 @@ Show Error           v                             |
 
 ---
 
+# Business Rule Precedence
 
 ## ลำดับกฎ (pseudo-code)
 
@@ -448,21 +449,32 @@ Show Error           v                             |
 
 * ดังนั้น ลำดับของกฎมีผลต่อผลลัพธ์ และไม่สามารถสลับลำดับได้ตามใจ
 
-- โครงคร่าว ๆ ที่ต้องครอบคลุม:
+เขียนเป็น pseudo-code ได้ดังนี้:
+
 ```text
 IF lost ticket THEN
-   ... (ค่าปรับตามประเภทรถ, ไม่สนใจ duration, ไม่ใช้ cap, ไม่ลดสมาชิก)
+    lost-ticket fee = 200 (car) / 100 (motorcycle) / 300 (other)
+    normal fee      = 0
+    member discount = 0
+    final fee       = lost-ticket fee
 ELSE
-   IF duration <= 15 THEN
-       ...
-   ELSE
-       ... คิดชั่วโมงแบบปัดขึ้น
-       ... คูณอัตราตามประเภทรถ
-       ... ใช้ maximum cap
-   END IF
-   IF member THEN
-       ... ลด 20% จากค่าที่ผ่าน cap แล้ว
-   END IF
+    IF duration <= 15 THEN
+        normal fee = 0
+    ELSE
+        hours      = ceiling(duration / 60)
+        normal fee = hours * rate        (car 20 / motorcycle 10 / other 30)
+        IF normal fee > maximum THEN     (car 100 / motorcycle 50 / other 150)
+            normal fee = maximum
+        END IF
+    END IF
+
+    IF member THEN
+        final fee = normal fee * 0.8
+        discount  = normal fee - final fee
+    ELSE
+        final fee = normal fee
+        discount  = 0
+    END IF
 END IF
 ```
 
@@ -484,3 +496,161 @@ END IF
 - ไม่ใช่เรื่องเดียวกัน
 - Input Validation = "ข้อมูลที่กรอกมาใช้ได้ไหม?"
 - Business Rule = "ถ้าข้อมูลใช้ได้แล้ว ระบบต้องทำอะไรกับมัน?"
+---
+
+# Dart Documentation Researched
+
+| หัวข้อที่ค้น | เอกสารอ้างอิง | ใช้ตรงไหนในโปรเจกต์ |
+|---|---|---|
+| `stdin.readLineSync()` | https://api.dart.dev/dart-io/Stdin/readLineSync.html | `readPlate()` / `readVehicleType()` / `readDuration()` / `readYesNo()` ใน `bin/main.dart` |
+| `dart:io` | https://api.dart.dev/dart-io/ | `stdout.write()` สำหรับพิมพ์คำถามโดยไม่ขึ้นบรรทัดใหม่ |
+| `int.tryParse()` | https://api.dart.dev/dart-core/int/tryParse.html | `readDuration()` — แปลงนาทีจากข้อความ |
+| `String.trim()` | https://api.dart.dev/dart-core/String/trim.html | ทุกช่องรับ input ก่อนตรวจความถูกต้อง |
+| `String.toLowerCase()` | https://api.dart.dev/dart-core/String/toLowerCase.html | `readVehicleType()` / `readYesNo()` และการตรวจคำสั่ง cancel |
+| `String.isNotEmpty` | https://api.dart.dev/dart-core/String/isNotEmpty.html | `readPlate()` — ตรวจทะเบียนว่าง |
+| Operator `~/` (truncating division) | https://dart.dev/language/operators | `ParkingFeeCalculator` — คำนวณชั่วโมงแบบปัดขึ้น |
+| Classes / Constructors | https://dart.dev/language/classes | ทั้ง 4 class ใน `lib/` |
+| Getters | https://dart.dev/language/methods#getters-and-setters | `ParkingSummary` — เปิดให้อ่านค่าโดยไม่ให้เขียนทับ |
+| Null safety | https://dart.dev/null-safety | `String?` / `int?` / `bool?` ที่ฟังก์ชันรับ input คืนกลับมา |
+| Package layout (`bin/` vs `lib/`) | https://dart.dev/tools/pub/package-layout | เหตุผลที่ import ด้วย `package:campus_parking/...` |
+
+## คำถามที่ต้องตอบ
+
+**1. `stdin.readLineSync()` return type คืออะไร และทำไมจึงเกี่ยวข้องกับ null safety?**
+
+> TODO เขียนด้วยคำของตัวเอง
+> ใบ้: ดูโค้ดที่ `bin/main.dart` ตรงที่ดัก `if (line == null)` — ลองอธิบายว่า `null` กับ string ว่าง ต่างกันยังไง และแต่ละอันเกิดตอนไหน
+
+**2. `tryParse()` ต่างจาก `parse()` อย่างไร และแบบใดเหมาะกับ user input ที่อาจผิด?**
+
+> TODO เขียนด้วยคำของตัวเอง
+> ใบ้: ลองนึกว่าถ้าเปลี่ยนไปใช้ `int.parse('abc')` แล้วผู้ใช้พิมพ์ตัวอักษร จะเกิดอะไรกับโปรแกรม
+
+**3. ทำไมการใช้ `!` ทุกครั้งที่เจอ nullable value จึงไม่ใช่วิธีแก้ปัญหาที่ดี?**
+
+> TODO เขียนด้วยคำของตัวเอง
+> ใบ้: ทั้งโปรเจกต์นี้ไม่มี `!` แม้แต่ตัวเดียว ลองอธิบายว่าใช้อะไรแทน และถ้าใส่ `!` ตรงจุดที่รับ input จะเกิดอะไรขึ้นตอนที่ input หมด
+
+---
+
+# Effective Dart Guidelines Used
+
+อ้างอิง: https://dart.dev/effective-dart
+
+> หมายเหตุ: เนื้อหาด้านล่างบันทึกจากสิ่งที่แก้จริงในโปรเจกต์นี้ ควรอ่านทวนแล้วเรียบเรียงเป็นคำของตัวเองก่อนส่ง เพราะเป็นหัวข้อที่อาจถูกถามปากเปล่า
+
+## Guideline 1 — PREFER making declarations private
+
+- **Guideline:** https://dart.dev/effective-dart/design#prefer-making-declarations-private
+- **นำมาใช้ตรงไหน:** `lib/parking_summary.dart`
+- **ก่อนปรับ:** field ทั้ง 7 ตัวเป็น public เช่น `int totalTransactions = 0;` ทำให้โค้ดส่วนใดก็ได้เขียนทับยอดรวมได้โดยตรง เช่น `summary.totalRevenue = 9999;`
+- **หลังปรับ:** เปลี่ยนเป็น `_totalTransactions` แล้วเปิดเฉพาะ getter สำหรับอ่าน ทางเดียวที่ยอดจะเปลี่ยนได้คือผ่าน `addTransaction()` — โค้ดที่เรียกใช้ไม่ต้องแก้เลยสักบรรทัด เพราะ getter เรียกใช้เหมือน field
+
+## Guideline 2 — DON'T use a relative import if it reaches into lib
+
+- **Guideline:** https://dart.dev/effective-dart/usage#dont-use-a-relative-import-if-it-reaches-into-lib (lint: `avoid_relative_lib_imports`)
+- **นำมาใช้ตรงไหน:** `bin/main.dart` และ `test/parking_fee_calculator_test.dart`
+- **ก่อนปรับ:** `import '../lib/parking_fee_calculator.dart';` ซึ่ง `dart analyze` รายงานเป็น issue
+- **หลังปรับ:** `import 'package:campus_parking/parking_fee_calculator.dart';` — Dart มองเป็นไฟล์เดียวกับที่ import จากที่อื่น ไม่เกิดปัญหาไฟล์ซ้ำสองชุด และ analyzer ไม่มี issue เหลือ
+
+## Guideline 3 — AVOID using `!` / จัดการ nullable ให้ตรงความหมาย
+
+- **Guideline:** https://dart.dev/null-safety/understanding-null-safety
+- **นำมาใช้ตรงไหน:** ฟังก์ชันรับ input ทั้ง 4 ตัวใน `bin/main.dart`
+- **ก่อนปรับ:** ใช้ `(stdin.readLineSync() ?? '')` ซึ่งกลบกรณี `null` ให้กลายเป็นค่าว่าง ทำให้ตอนที่ไม่มี input เหลือ โปรแกรมเข้าใจผิดว่าผู้ใช้กด Enter เปล่า แล้ววนถามใหม่ไม่รู้จบ
+- **หลังปรับ:** รับเป็น `String?` แล้วดัก `if (line == null) return null;` ก่อน จากนั้น Dart จะ promote ตัวแปรเป็น `String` ให้เอง — ทั้งไฟล์จึงไม่มี `!` เลย และแยกความหมายของ "ไม่มีคนกรอกแล้ว" ออกจาก "กรอกค่าว่าง" ได้
+
+---
+
+# Test Matrix
+
+รวม 39 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
+
+## วิธีรัน
+
+รันทีละเคสด้วยการป้อน input ล่วงหน้า:
+
+```bash
+printf '1\nABC123\ncar\n16\nn\nn\n3\n' | dart run bin/main.dart
+```
+
+หรือรันทั้งหมดรวดเดียวด้วยสคริปต์ช่วยที่อยู่ใน root ของโปรเจกต์:
+
+```bash
+bash run_tests.sh              # รันทุกเคส
+bash run_tests.sh T26          # รันเฉพาะเคสเดียว
+bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟล์
+```
+
+ลำดับที่โปรแกรมถามคือ เมนู → ทะเบียน → ประเภทรถ → นาที → Member → Lost ticket → กลับเมนู
+
+## Boundary cases
+
+| ID   |    Input / Scenario   |   Expected  | Actual | Pass? |
+|------|-----------------------|-------------|--------|-------|
+|  T01 |    car, 0 min         | 0.00        |        |       |
+|  T02 |    car, 15 min        | 0.00        |        |       |
+|  T03 |    car, 16 min        | 20.00       |        |       |
+|  T04 |    car, 60 min        | 20.00       |        |       |
+|  T05 |    car, 61 min        | 40.00       |        |       |
+|  T06 |    car, 120 min       | 40.00       |        |       |
+|  T07 |    car, 121 min       | 60.00       |        |       |
+|  T08 |    car, 500 min       | 100.00(cap) |        |       |
+|  T09 |    motorcycle, 15 min | 0.00        |        |       |
+|  T10 |    motorcycle, 16 min | 10.00       |        |       |
+|  T11 |    motorcycle, 61 min | 20.00       |        |       | 
+|  T12 |    motorcycle, 121 min| 30.00       |        |       |
+|  T13 |    motorcycle, 500 min| 50.00 (cap) |        |       |
+|  T14 |    car, 999999 min    | 100.00 (cap)|        |       |
+
+## Invalid input
+
+|  ID |      Input / Scenario   |              Expected              | Actual | Pass? |
+|-----|-------------------------|------------------------------------|--------|-------|
+| T15 | vehicle type = `CAR`    |            รับเป็น car, 20.00        |        |       |
+| T16 | vehicle type = ` car `  |            รับเป็น car, 20.00        |        |       |
+| T17 | vehicle type = `truck`  |    Invalid vehicle type แล้วถามใหม่  |        |       |
+| T18 | vehicle type = (ว่าง)    |    Invalid vehicle type แล้วถามใหม่  |        |       |
+| T19 | duration = `abc`        | Invalid number แล้วถามใหม่ ไม่ crash  |        |       |
+| T20 | duration = `-1`         |    Duration cannot be negative     |        |       |
+| T21 | duration = (ว่าง)        |    Invalid number แล้วถามใหม่        |        |       |
+| T22 | duration = `0`          |             ยอมรับ, 0.00            |        |       |
+| T23 | member = `x`            |          Please enter y or n       |        |       |
+| T24 | เมนู = `9`               |        Invalid choice, ไม่ crash    |        |       |
+
+## Business-rule interaction
+
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T25 | car 500 min, non-member | 100.00 | | |
+| T26 | car 500 min, member | normal 100 / discount 20 / final 80.00 | | |
+| T27 | motorcycle 500 min, member | normal 50 / discount 10 / final 40.00 | | |
+| T28 | car 10 min, member (ฟรี + สมาชิก) | 0.00 | | |
+| T29 | car, lost ticket | 200.00 | | |
+| T30 | car, member + lost ticket | 200.00 (ไม่ลดสมาชิก) | | |
+| T31 | motorcycle, lost ticket | 100.00 | | |
+| T32 | car 185 min, member | normal 80 / discount 16 / final 64.00 | | |
+
+## Application state
+
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T33 | ดู summary ก่อนทำรายการใด ๆ | ทุกค่าเป็น 0, revenue 0.00 | | |
+| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | | |
+| T35 | ยกเลิกกลางคัน แล้วดู summary | total ยังเป็น 1, revenue 20.00 | | |
+| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | | |
+
+## Extra cases
+
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | | |
+| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | | |
+| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | | |
+
+## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
+
+เคสในกลุ่ม Boundary และ Business-rule interaction ส่วนใหญ่มี unit test ใน `test/parking_fee_calculator_test.dart` ครอบคลุมอยู่แล้ว (19 เคส) การทดสอบด้วยมือในตารางนี้จึงเป็นการยืนยันซ้ำผ่านหน้าจอจริง ส่วนกลุ่ม Invalid input และ Application state เป็นกลุ่มที่มีเฉพาะการทดสอบด้วยมือ เพราะตรรกะ validation อยู่ในลูปเดียวกับ `stdin.readLineSync()` จึงเรียกทดสอบแยกไม่ได้
+
+---
+
