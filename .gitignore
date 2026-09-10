@@ -6,3 +6,6 @@ build/
 DEMO.md
 SUMMARY.md
 run_tests.sh
+
+# ไฟล์ที่ macOS Finder สร้างเอง เก็บแค่การตั้งค่ามุมมองของโฟลเดอร์
+.DS_Store

@@ -364,18 +364,25 @@ END IF
 
 **1. `stdin.readLineSync()` return type คืออะไร และทำไมจึงเกี่ยวข้องกับ null safety?**
 
-> TODO เขียนด้วยคำของตัวเอง
-> ใบ้: ดูโค้ดที่ `bin/main.dart` ตรงที่ดัก `if (line == null)` — ลองอธิบายว่า `null` กับ string ว่าง ต่างกันยังไง และแต่ละอันเกิดตอนไหน
+> readLineSync() มี return type เป็น String? เพราะมีกรณีที่ไม่มีบรรทัดให้อ่านจริง ๆ เช่น เมื่อ input หมดจากการกด Ctrl+D หรือการ pipe ข้อมูลเข้ามาแล้วข้อมูลหมดกรณีนี้ต่างจากการกด Enter เปล่า เพราะ Enter เปล่ายังได้ String ที่เป็นค่าว่าง ('') กลับมา เครื่องหมาย ? เป็นส่วนหนึ่งของ Dart null safety ซึ่งหมายความว่าค่านี้สามารถเป็น null ได้ และไม่สามารถนำไปใช้เป็น String โดยตรงโดยไม่จัดการกรณี null ก่อน ในโปรแกรมนี้ ดัก null ไว้ตอนรับ input และถือว่าเป็นการยกเลิกรายการ เพื่อไม่ให้โปรแกรมนำค่า null ไปใช้งานต่อ
 
 **2. `tryParse()` ต่างจาก `parse()` อย่างไร และแบบใดเหมาะกับ user input ที่อาจผิด?**
 
-> TODO เขียนด้วยคำของตัวเอง
-> ใบ้: ลองนึกว่าถ้าเปลี่ยนไปใช้ `int.parse('abc')` แล้วผู้ใช้พิมพ์ตัวอักษร จะเกิดอะไรกับโปรแกรม
+> สำหรับ user input หนูเลือกใช้ tryParse() เพราะเหมาะกับกรณีที่ผู้ใช้อาจกรอกข้อมูลไม่ถูกต้อง parse() จะ throw FormatException เมื่อไม่สามารถแปลงค่าได้ เช่น ถ้าผู้ใช้กรอก abc แทนตัวเลข โปรแกรมจะเกิด exception และถ้าไม่ได้จัดการด้วย try/catch ก็อาจทำให้โปรแกรมหยุดทำงาน ในทางกลับกัน tryParse() จะคืนค่า null เมื่อแปลงไม่ได้ ทำให้สามารถตรวจสอบด้วย if และแจ้งให้ผู้ใช้กรอกข้อมูลใหม่ได้ โดยในโปรแกรมนี้ใช้กับการรับระยะเวลาจอดใน readDuration().
 
 **3. ทำไมการใช้ `!` ทุกครั้งที่เจอ nullable value จึงไม่ใช่วิธีแก้ปัญหาที่ดี?**
 
-> TODO เขียนด้วยคำของตัวเอง
-> ใบ้: ทั้งโปรเจกต์นี้ไม่มี `!` แม้แต่ตัวเดียว ลองอธิบายว่าใช้อะไรแทน และถ้าใส่ `!` ตรงจุดที่รับ input จะเกิดอะไรขึ้นตอนที่ input หมด
+> ! เป็นการยืนยันกับ compiler ว่าค่านั้นไม่เป็น null หากค่าที่เราคิดว่าไม่เป็น null กลับเป็น null จริง โปรแกรมจะเกิด runtime error ดังนั้นการใช้ ! เป็นการย้ายปัญหาจากการตรวจสอบในตอน compile ไปให้เกิดขึ้นตอน runtime ซึ่งไม่เหมาะกับ user input ที่อาจมีค่าที่ไม่คาดคิด ในโปรแกรมนี้ใช้การตรวจสอบ null แล้ว return ออกไปก่อน เช่น:
+
+String? line = stdin.readLineSync();
+
+if (line == null) {
+  return null;
+}
+
+String input = line.trim();
+
+> หลังจากตรวจสอบแล้ว Dart สามารถรู้ได้ว่า line ไม่เป็น null และสามารถใช้เป็น String ได้โดยไม่ต้องใช้ ! นอกจากนี้ทั้งโปรเจกต์ไม่มีการใช้ ! แม้แต่จุดเดียว เพราะเลือกจัดการ nullable value ด้วย null check แทน
 
 ---
 
@@ -412,6 +419,8 @@ END IF
 
 รวม 42 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
 
+**ผลการทดสอบ: ผ่านทั้งหมด 42 เคส** (รันเมื่อ 8 กันยายน 2026 ด้วย Dart SDK 3.13)
+
 ## วิธีรัน
 
 รันทีละเคสด้วยการป้อน input ล่วงหน้า:
@@ -434,68 +443,68 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 
 | ID   |    Input / Scenario   |   Expected  | Actual | Pass? |
 |------|-----------------------|-------------|--------|-------|
-|  T01 |    car, 0 min         | 0.00        |        |       |
-|  T02 |    car, 15 min        | 0.00        |        |       |
-|  T03 |    car, 16 min        | 20.00       |        |       |
-|  T04 |    car, 60 min        | 20.00       |        |       |
-|  T05 |    car, 61 min        | 40.00       |        |       |
-|  T06 |    car, 120 min       | 40.00       |        |       |
-|  T07 |    car, 121 min       | 60.00       |        |       |
-|  T08 |    car, 500 min       | 100.00(cap) |        |       |
-|  T09 |    motorcycle, 15 min | 0.00        |        |       |
-|  T10 |    motorcycle, 16 min | 10.00       |        |       |
-|  T11 |    motorcycle, 61 min | 20.00       |        |       | 
-|  T12 |    motorcycle, 121 min| 30.00       |        |       |
-|  T13 |    motorcycle, 500 min| 50.00 (cap) |        |       |
-|  T14 |    car, 999999 min    | 100.00 (cap)|        |       |
+| T01 | car, 0 min | 0.00 | 0.00 | Pass |
+| T02 | car, 15 min | 0.00 | 0.00 | Pass |
+| T03 | car, 16 min | 20.00 | 20.00 | Pass |
+| T04 | car, 60 min | 20.00 | 20.00 | Pass |
+| T05 | car, 61 min | 40.00 | 40.00 | Pass |
+| T06 | car, 120 min | 40.00 | 40.00 | Pass |
+| T07 | car, 121 min | 60.00 | 60.00 | Pass |
+| T08 | car, 500 min | 100.00(cap) | 100.00 | Pass |
+| T09 | motorcycle, 15 min | 0.00 | 0.00 | Pass |
+| T10 | motorcycle, 16 min | 10.00 | 10.00 | Pass |
+| T11 | motorcycle, 61 min | 20.00 | 20.00 | Pass |
+| T12 | motorcycle, 121 min | 30.00 | 30.00 | Pass |
+| T13 | motorcycle, 500 min | 50.00 (cap) | 50.00 | Pass |
+| T14 | car, 999999 min | 100.00 (cap) | 100.00 | Pass |
 
 ## Invalid input
 
 |  ID |      Input / Scenario   |              Expected              | Actual | Pass? |
 |-----|-------------------------|------------------------------------|--------|-------|
-| T15 | vehicle type = `CAR`    |            รับเป็น car, 20.00        |        |       |
-| T16 | vehicle type = ` car `  |            รับเป็น car, 20.00        |        |       |
-| T17 | vehicle type = `truck`  |    Invalid vehicle type แล้วถามใหม่  |        |       |
-| T18 | vehicle type = (ว่าง)    |    Invalid vehicle type แล้วถามใหม่  |        |       |
-| T19 | duration = `abc`        | Invalid number แล้วถามใหม่ ไม่ crash  |        |       |
-| T20 | duration = `-1`         |    Duration cannot be negative     |        |       |
-| T21 | duration = (ว่าง)        |    Invalid number แล้วถามใหม่        |        |       |
-| T22 | duration = `0`          |             ยอมรับ, 0.00            |        |       |
-| T23 | member = `x`            |          Please enter y or n       |        |       |
-| T24 | เมนู = `9`               |        Invalid choice, ไม่ crash    |        |       |
+| T15 | vehicle type = `CAR` | รับเป็น car, 20.00 | รับเป็น car, 20.00 | Pass |
+| T16 | vehicle type = ` car ` | รับเป็น car, 20.00 | รับเป็น car, 20.00 | Pass |
+| T17 | vehicle type = `truck` | Invalid vehicle type แล้วถามใหม่ | Invalid vehicle type แล้วถามใหม่ | Pass |
+| T18 | vehicle type = (ว่าง) | Invalid vehicle type แล้วถามใหม่ | Invalid vehicle type แล้วถามใหม่ | Pass |
+| T19 | duration = `abc` | Invalid number แล้วถามใหม่ ไม่ crash | Invalid number แล้วถามใหม่ | Pass |
+| T20 | duration = `-1` | Duration cannot be negative | Duration cannot be negative | Pass |
+| T21 | duration = (ว่าง) | Invalid number แล้วถามใหม่ | Invalid number แล้วถามใหม่ | Pass |
+| T22 | duration = `0` | ยอมรับ, 0.00 | 0.00 | Pass |
+| T23 | member = `x` | Please enter y or n | Please enter y or n | Pass |
+| T24 | เมนู = `9` | Invalid choice, ไม่ crash | Invalid choice, ไม่ crash | Pass |
 
 ## Business-rule interaction
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T25 | car 500 min, non-member | 100.00 | | |
-| T26 | car 500 min, member | normal 100 / discount 20 / final 80.00 | | |
-| T27 | motorcycle 500 min, member | normal 50 / discount 10 / final 40.00 | | |
-| T28 | car 10 min, member (ฟรี + สมาชิก) | 0.00 | | |
-| T29 | car, lost ticket | 200.00 | | |
-| T30 | car, member + lost ticket | 200.00 (ไม่ลดสมาชิก) | | |
-| T31 | motorcycle, lost ticket | 100.00 | | |
-| T32 | car 185 min, member | normal 80 / discount 16 / final 64.00 | | |
+| T25 | car 500 min, non-member | 100.00 | 100.00 | Pass |
+| T26 | car 500 min, member | normal 100 / discount 20 / final 80.00 | normal 100 / discount 20 / final 80.00 | Pass |
+| T27 | motorcycle 500 min, member | normal 50 / discount 10 / final 40.00 | normal 50 / discount 10 / final 40.00 | Pass |
+| T28 | car 10 min, member (ฟรี + สมาชิก) | 0.00 | 0.00 | Pass |
+| T29 | car, lost ticket | 200.00 | 200.00 | Pass |
+| T30 | car, member + lost ticket | 200.00 (ไม่ลดสมาชิก) | 200.00 (ไม่มีบรรทัดส่วนลด) | Pass |
+| T31 | motorcycle, lost ticket | 100.00 | 100.00 | Pass |
+| T32 | car 185 min, member | normal 80 / discount 16 / final 64.00 | normal 80 / discount 16 / final 64.00 | Pass |
 
 ## Application state
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T33 | ดู summary ก่อนทำรายการใด ๆ | ทุกค่าเป็น 0, revenue 0.00 | | |
-| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | | |
-| T35 | ยกเลิกกลางคัน แล้วดู summary | total ยังเป็น 1, revenue 20.00 | | |
-| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | | |
+| T33 | ดู summary ก่อนทำรายการใด ๆ | ทุกค่าเป็น 0, revenue 0.00 | ทุกค่าเป็น 0, revenue 0.00 | Pass |
+| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | Pass |
+| T35 | ยกเลิกกลางคัน แล้วดู summary | total ยังเป็น 1, revenue 20.00 | total 1, revenue 20.00 | Pass |
+| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | ออกโปรแกรมได้ปกติ | Pass |
 
 ## Extra cases
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | | |
-| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | | |
-| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | | |
-| T40 | other, 30 นาที | 30.00 | | |
-| T41 | other, 500 นาที | 150.00 (cap) | | |
-| T42 | other, lost ticket | 300.00 | | |
+| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | Plate cannot be empty แล้วถามใหม่ | Pass |
+| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | Transaction cancelled, summary 0 | Pass |
+| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | Transaction cancelled แล้วปิดโปรแกรมเอง | Pass |
+| T40 | other, 30 นาที | 30.00 | 30.00 | Pass |
+| T41 | other, 500 นาที | 150.00 (cap) | 150.00 | Pass |
+| T42 | other, lost ticket | 300.00 | 300.00 | Pass |
 
 ## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
 
