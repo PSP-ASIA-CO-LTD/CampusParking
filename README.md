@@ -109,7 +109,8 @@ CampusParking/
 │   ├── parking_transaction.dart      # จอด 1 ครั้ง
 │   ├── parking_fee_calculator.dart   # business rules การคิดค่าจอด
 │   ├── parking_receipt.dart          # การแสดงใบเสร็จ
-│   └── parking_summary.dart          # ยอดสะสมประจำวัน
+│   ├── parking_summary.dart          # ยอดสะสมประจำวัน
+│   └── parking_menu.dart             # เมนูและยอดสรุปที่แสดงบนหน้าจอ
 ├── test/
 │   └── parking_fee_calculator_test.dart
 ├── analysis_options.yaml

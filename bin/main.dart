@@ -4,6 +4,7 @@ import 'package:campus_parking/parking_fee_calculator.dart';
 import 'package:campus_parking/parking_transaction.dart';
 import 'package:campus_parking/parking_summary.dart';
 import 'package:campus_parking/parking_receipt.dart';
+import 'package:campus_parking/parking_menu.dart';
 
 // คำสั่งที่ผู้ใช้พิมพ์เพื่อยกเลิก transaction ที่กำลังกรอกอยู่
 // เก็บเป็นค่าคงที่จุดเดียว ถ้าอยากเปลี่ยนคำสั่งจะได้แก้ที่เดียว
@@ -15,12 +16,7 @@ void main() {
   ParkingReceipt receipt = ParkingReceipt();
 
   while (true) {
-    print('========================================');
-    print('CAMPUS PARKING SYSTEM');
-    print('========================================');
-    print('1. New parking transaction');
-    print('2. Show daily summary');
-    print('3. Exit');
+    printMainMenu();
 
     stdout.write('Select: ');
     String? choice = stdin.readLineSync()?.trim();
@@ -48,18 +44,7 @@ void main() {
       //เป็นขั้นตอนสุดท้าย รถสามารถออกได้จย้า
       print('Car Out');
     } else if (choice == '2') {
-      print('========================================');
-      print('DAILY SUMMARY');
-      print('========================================');
-      print('Total transactions : ${summary.totalTransactions}');
-      print('Cars               : ${summary.carCount}');
-      print('Motorcycles        : ${summary.motorcycleCount}');
-      print('Other              : ${summary.otherCount}');
-      print('Members            : ${summary.memberCount}');
-      print('Lost tickets       : ${summary.lostTicketCount}');
-      print(
-        'Total revenue      : ${summary.totalRevenue.toStringAsFixed(2)} THB',
-      );
+      printDailySummary(summary);
     } else if (choice == '3') {
       break;
     } else {
