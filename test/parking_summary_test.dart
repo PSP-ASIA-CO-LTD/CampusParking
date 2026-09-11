@@ -55,7 +55,7 @@ void main() {
     expect(summary.motorcycleCount, 1);
     expect(summary.memberCount, 2);
     expect(summary.lostTicketCount, 1);
-    expect(summary.totalRevenue, 20 + 24 + 200);
+    expect(summary.totalRevenue, 20 + 24 + 0);
   });
 
   //vehicle type counters
@@ -112,7 +112,7 @@ void main() {
 
     expect(summary.memberCount, 1);
     expect(summary.lostTicketCount, 1);
-    expect(summary.totalRevenue, 200);
+    expect(summary.totalRevenue, 16);
   });
 
   //free parking still counts as a transaction

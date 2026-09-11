@@ -1,43 +1,22 @@
 import 'parking_transaction.dart';
 
-// ผลลัพธ์การคำนวณค่าจอดรถ แยกเป็น normal fee / discount / lost-ticket fee / final fee
+// ผลลัพธ์การคำนวณค่าจอดรถ แยกเป็น normal fee / discount / final fee
 class ParkingFeeResult {
   final int normalFee;
   final int discount;
-  final int lostTicketFee;
   final int finalFee;
 
   ParkingFeeResult({
     required this.normalFee,
     required this.discount,
-    required this.lostTicketFee,
     required this.finalFee,
   });
 }
 
 // คำนวณค่าจอดรถจากข้อมูล ParkingTransaction
+// บัตรหายไม่มีค่าปรับแล้ว เป็นเพียงข้อมูลที่ ParkingSummary นับจำนวนไว้
 class ParkingFeeCalculator {
   ParkingFeeResult calculateFee(ParkingTransaction transaction) {
-    if (transaction.lostTicket) {
-      // Lost ticket fee replaces everything: no duration, no cap, no discount
-      int lostTicketFee;
-
-      if (transaction.vehicleType == 'car') {
-        lostTicketFee = 200;
-      } else if (transaction.vehicleType == 'motorcycle') {
-        lostTicketFee = 100;
-      } else {
-        lostTicketFee = 300;
-      }
-
-      return ParkingFeeResult(
-        normalFee: 0,
-        discount: 0,
-        lostTicketFee: lostTicketFee,
-        finalFee: lostTicketFee,
-      );
-    }
-
     int normalFee = 0;
     int hours = 0;
 
@@ -74,7 +53,6 @@ class ParkingFeeCalculator {
     return ParkingFeeResult(
       normalFee: normalFee,
       discount: discount,
-      lostTicketFee: 0,
       finalFee: finalFee,
     );
   }

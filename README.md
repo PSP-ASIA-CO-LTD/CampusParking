@@ -9,7 +9,7 @@
 | ทำอะไร | โปรแกรม CLI คำนวณค่าจอดรถ ออกใบเสร็จ และสรุปยอดประจำวัน |
 | รันยังไง | `dart run bin/main.dart` |
 | รองรับรถ | car / motorcycle / other |
-| กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, ค่าปรับบัตรหาย |
+| กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, บัตรหายไม่คิดค่าปรับ |
 | โครงสร้าง | `bin/main.dart` 52 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 4 class แยกความรับผิดชอบ |
 | การทดสอบ | 19 unit test อัตโนมัติ (`dart test`) + 42 manual test case |
 | คุณภาพโค้ด | `dart format` ผ่าน • `dart analyze` ไม่มี issue • GitHub Actions รันเทสทุกครั้งที่ push |
@@ -72,7 +72,7 @@ Total revenue
 | other | ฟรี | 30 | +30 ต่อทุกชั่วโมงที่เริ่มต้น | 150 |
 
 - **สมาชิก** ลด 20% คิดจากค่าจอดหลังใช้เพดานราคาแล้ว
-- **บัตรหาย** คิดค่าปรับ car 200 / motorcycle 100 / other 300 แทนค่าจอดทั้งหมด ไม่คิดตามเวลา ไม่ใช้เพดาน และไม่ลดสมาชิก
+- **บัตรหาย** ไม่คิดค่าปรับใด ๆ ทั้งสมาชิกและไม่ใช่สมาชิก ยังคิดค่าจอดตามเวลาปกติ และยังได้ส่วนลดสมาชิกตามปกติ ระบบเพียงบันทึกจำนวนครั้งไว้ใน daily summary
 - `other` เป็นประเภทที่เพิ่มเข้ามาเองนอกเหนือจากโจทย์ (stretch goal)
 
 📄 ตารางฉบับเต็มพร้อมตัวอย่างการคิดเงินทีละช่วงเวลา: **[docs/business-rules.md](docs/business-rules.md)**
@@ -286,9 +286,9 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 
 ## ลำดับกฎ (pseudo-code)
 
-- เริ่มจากตรวจสอบ Lost Ticket ก่อน เพราะ Lost Ticket เป็นกรณีพิเศษที่มีค่าปรับตามประเภทรถ และไม่ต้องสนใจระยะเวลาที่จอด
+- Lost Ticket ไม่มีผลต่อการคิดเงินอีกต่อไป จึงไม่อยู่ในลำดับการคำนวณเลย เป็นเพียงข้อมูลที่ ParkingSummary นับจำนวนไว้
 
-- ถ้าไม่ได้ Lost Ticket จึงตรวจสอบระยะเวลาจอด ถ้าจอดไม่เกิน 15 นาที จะไม่เสียค่าจอด
+- เริ่มจากตรวจสอบระยะเวลาจอด ถ้าจอดไม่เกิน 15 นาที จะไม่เสียค่าจอด
 
 - ถ้าเกิน 15 นาที จะคำนวณจำนวนชั่วโมงโดยปัดขึ้น แล้วคูณกับอัตราค่าจอดตามประเภทรถ จากนั้นจึงใช้ maximum fee ตามกฎ
 
@@ -299,36 +299,31 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 เขียนเป็น pseudo-code ได้ดังนี้:
 
 ```text
-IF lost ticket THEN
-    lost-ticket fee = 200 (car) / 100 (motorcycle) / 300 (other)
-    normal fee      = 0
-    member discount = 0
-    final fee       = lost-ticket fee
+IF duration <= 15 THEN
+    normal fee = 0
 ELSE
-    IF duration <= 15 THEN
-        normal fee = 0
-    ELSE
-        hours      = ceiling(duration / 60)
-        normal fee = hours * rate        (car 20 / motorcycle 10 / other 30)
-        IF normal fee > maximum THEN     (car 100 / motorcycle 50 / other 150)
-            normal fee = maximum
-        END IF
-    END IF
-
-    IF member THEN
-        final fee = normal fee * 0.8
-        discount  = normal fee - final fee
-    ELSE
-        final fee = normal fee
-        discount  = 0
+    hours      = ceiling(duration / 60)
+    normal fee = hours * rate            (car 20 / motorcycle 10 / other 30)
+    IF normal fee > maximum THEN         (car 100 / motorcycle 50 / other 150)
+        normal fee = maximum
     END IF
 END IF
+
+IF member THEN
+    final fee = normal fee * 0.8
+    discount  = normal fee - final fee
+ELSE
+    final fee = normal fee
+    discount  = 0
+END IF
+
+(lost ticket ไม่เข้าสูตรคำนวณ ใช้แค่นับจำนวนใน daily summary)
 ```
 
 
 ## คำถามที่ต้องตอบ
 1. **Lost ticket ควรถูกตรวจสอบตอนไหน?**
-- ควรตรวจสอบเป็นอันดับแรก ก่อนคำนวณ duration เพราะ Lost Ticket เป็น Business Rule พิเศษที่ไม่สนใจว่าจอดมากี่นาที และใช้ค่าปรับตามประเภทรถโดยตรง
+- ตามกฎเดิม Lost Ticket ถูกตรวจสอบเป็นอันดับแรก เพราะเป็นค่าปรับที่แทนค่าจอดทั้งหมด แต่กฎใหม่ยกเลิกค่าปรับบัตรหาย Lost Ticket จึงไม่เข้ามาในลำดับการคำนวณอีกเลย ถูกตรวจสอบหลังคำนวณเสร็จ ตอนที่ ParkingSummary นับจำนวนครั้งที่บัตรหาย
 
 2. **Member discount ควรเกิดก่อนหรือหลัง maximum fee?**
 - เพราะ Business Rule กำหนดให้คำนวณค่าจอดก่อน แล้วจำกัดด้วย maximum fee จากนั้นจึงนำราคาที่ผ่าน cap แล้วมาลดสมาชิก 20%
@@ -420,7 +415,9 @@ String input = line.trim();
 
 รวม 42 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
 
-**ผลการทดสอบ: ผ่านทั้งหมด 42 เคส** (รันเมื่อ 8 กันยายน 2026 ด้วย Dart SDK 3.13)
+**ผลการทดสอบ: ผ่าน 37 เคส** (รันเมื่อ 8 กันยายน 2026 ด้วย Dart SDK 3.13)
+
+> อีก 5 เคส (T29, T30, T31, T34, T42) เป็นเคสที่เกี่ยวกับบัตรหาย กฎถูกเปลี่ยนภายหลังเป็น "บัตรหายไม่คิดค่าปรับ" ค่า Expected จึงถูกปรับใหม่แล้ว และช่อง Actual รอการรันจริงอีกครั้ง
 
 ## วิธีรัน
 
@@ -428,14 +425,6 @@ String input = line.trim();
 
 ```bash
 printf '1\nABC123\ncar\n16\nn\nn\n3\n' | dart run bin/main.dart
-```
-
-หรือรันทั้งหมดรวดเดียวด้วยสคริปต์ช่วยที่อยู่ใน root ของโปรเจกต์:
-
-```bash
-bash run_tests.sh              # รันทุกเคส
-bash run_tests.sh T26          # รันเฉพาะเคสเดียว
-bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟล์
 ```
 
 ลำดับที่โปรแกรมถามคือ เมนู → ทะเบียน → ประเภทรถ → นาที → Member → Lost ticket → กลับเมนู
@@ -482,9 +471,9 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 | T26 | car 500 min, member | normal 100 / discount 20 / final 80.00 | normal 100 / discount 20 / final 80.00 | Pass |
 | T27 | motorcycle 500 min, member | normal 50 / discount 10 / final 40.00 | normal 50 / discount 10 / final 40.00 | Pass |
 | T28 | car 10 min, member (ฟรี + สมาชิก) | 0.00 | 0.00 | Pass |
-| T29 | car, lost ticket | 200.00 | 200.00 | Pass |
-| T30 | car, member + lost ticket | 200.00 (ไม่ลดสมาชิก) | 200.00 (ไม่มีบรรทัดส่วนลด) | Pass |
-| T31 | motorcycle, lost ticket | 100.00 | 100.00 | Pass |
+| T29 | car 30 min, lost ticket | 20.00 (ไม่มีค่าปรับ) |  |  |
+| T30 | car 30 min, member + lost ticket | normal 20 / discount 4 / final 16.00 |  |  |
+| T31 | motorcycle 30 min, lost ticket | 10.00 |  |  |
 | T32 | car 185 min, member | normal 80 / discount 16 / final 64.00 | normal 80 / discount 16 / final 64.00 | Pass |
 
 ## Application state
@@ -492,7 +481,7 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
 | T33 | ดู summary ก่อนทำรายการใด ๆ | ทุกค่าเป็น 0, revenue 0.00 | ทุกค่าเป็น 0, revenue 0.00 | Pass |
-| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 244.00 | Pass |
+| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 |  |  |
 | T35 | ยกเลิกกลางคัน แล้วดู summary | total ยังเป็น 1, revenue 20.00 | total 1, revenue 20.00 | Pass |
 | T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | ออกโปรแกรมได้ปกติ | Pass |
 
@@ -505,7 +494,7 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 | T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | Transaction cancelled แล้วปิดโปรแกรมเอง | Pass |
 | T40 | other, 30 นาที | 30.00 | 30.00 | Pass |
 | T41 | other, 500 นาที | 150.00 (cap) | 150.00 | Pass |
-| T42 | other, lost ticket | 300.00 | 300.00 | Pass |
+| T42 | other 30 min, lost ticket | 30.00 |  |  |
 
 ## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
 
@@ -531,7 +520,7 @@ bash run_tests.sh > result.txt # เก็บผลไว้เป็นไฟ�
 ## Q3 — class ใดมี responsibility ชัดที่สุดในระบบ?
 
 
-> ParkingFeeCalculator มี responsibility ที่ชัดที่สุด เพราะหน้าที่หลักของ class นี้คือคำนวณค่าจอดรถจากข้อมูลของ transaction โดยจัดการ business rules เช่น ระยะเวลาจอด, ประเภทรถ, maximum fee, member discount และ lost ticket
+> ParkingFeeCalculator มี responsibility ที่ชัดที่สุด เพราะหน้าที่หลักของ class นี้คือคำนวณค่าจอดรถจากข้อมูลของ transaction โดยจัดการ business rules เช่น ระยะเวลาจอด, ประเภทรถ, maximum fee และ member discount
 
 
 ## Q4 — มี class ใดที่คิดจะสร้าง แต่สุดท้ายตัดสินใจไม่สร้าง? เพราะอะไร?

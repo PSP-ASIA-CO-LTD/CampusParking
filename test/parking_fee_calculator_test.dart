@@ -266,8 +266,8 @@ void main() {
     expect(result.finalFee, 80);
   });
 
-  //lost ticket
-  test('Car lost ticket should cost 200 baht', () {
+  //lost ticket does not add any fee any more
+  test('Car with a lost ticket should still pay the normal fee', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
@@ -279,11 +279,11 @@ void main() {
 
     final result = calculator.calculateFee(transaction);
 
-    expect(result.normalFee, 0);
-    expect(result.finalFee, 200);
+    expect(result.normalFee, 20);
+    expect(result.finalFee, 20);
   });
 
-  test('Motorcycle lost ticket should cost 100 baht', () {
+  test('Motorcycle with a lost ticket should still pay the normal fee', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
@@ -295,11 +295,11 @@ void main() {
 
     final result = calculator.calculateFee(transaction);
 
-    expect(result.normalFee, 0);
-    expect(result.finalFee, 100);
+    expect(result.normalFee, 10);
+    expect(result.finalFee, 10);
   });
 
-  test('Other vehicle lost ticket should cost 300 baht', () {
+  test('Other vehicle with a lost ticket should still pay the normal fee', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
@@ -311,8 +311,8 @@ void main() {
 
     final result = calculator.calculateFee(transaction);
 
-    expect(result.normalFee, 0);
-    expect(result.finalFee, 300);
+    expect(result.normalFee, 30);
+    expect(result.finalFee, 30);
   });
 
   //more car boundary cases
@@ -531,7 +531,7 @@ void main() {
     expect(result.finalFee, 64);
   });
 
-  test('Member with a lost ticket should not get the member discount', () {
+  test('Member with a lost ticket should still get the member discount', () {
     final calculator = ParkingFeeCalculator();
     final transaction = ParkingTransaction(
       plate: 'ABC123',
@@ -543,7 +543,8 @@ void main() {
 
     final result = calculator.calculateFee(transaction);
 
-    expect(result.discount, 0);
-    expect(result.finalFee, 200);
+    expect(result.normalFee, 20);
+    expect(result.discount, 4);
+    expect(result.finalFee, 16);
   });
 }
