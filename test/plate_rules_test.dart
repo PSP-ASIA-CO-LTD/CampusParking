@@ -20,5 +20,28 @@ void main() {
     expect(isMemberPlate('  12-ABC  '), isTrue);
   });
 
-  
+  //ทะเบียนที่ไม่เข้ากฎสมาชิก
+  test('A plate starting with letters should not be a member', () {
+    expect(isMemberPlate('ABC123'), isFalse);
+  });
+
+  test('A plate with digits but no hyphen should not be a member', () {
+    expect(isMemberPlate('12ABC'), isFalse);
+  });
+
+  test('A plate made of digits only should not be a member', () {
+    expect(isMemberPlate('1234'), isFalse);
+  });
+
+  test('A plate with nothing after the hyphen should not be a member', () {
+    expect(isMemberPlate('12-'), isFalse);
+  });
+
+  test('A plate starting with a hyphen should not be a member', () {
+    expect(isMemberPlate('-123'), isFalse);
+  });
+
+  test('A plate whose hyphen comes after letters should not be a member', () {
+    expect(isMemberPlate('AB-123'), isFalse);
+  });
 }
