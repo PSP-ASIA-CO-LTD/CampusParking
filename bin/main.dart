@@ -5,6 +5,7 @@ import 'package:campus_parking/parking_transaction.dart';
 import 'package:campus_parking/parking_summary.dart';
 import 'package:campus_parking/parking_receipt.dart';
 import 'package:campus_parking/parking_menu.dart';
+import 'package:campus_parking/plate_rules.dart';
 
 // คำสั่งที่ผู้ใช้พิมพ์เพื่อยกเลิก transaction ที่กำลังกรอกอยู่
 // เก็บเป็นค่าคงที่จุดเดียว ถ้าอยากเปลี่ยนคำสั่งจะได้แก้ที่เดียว
@@ -65,8 +66,8 @@ ParkingTransaction? readTransaction() {
   int? duration = readDuration();
   if (duration == null) return null;
 
-  bool? isMember = readYesNo('Member?');
-  if (isMember == null) return null;
+  // สมาชิกถูกตัดสินจากรูปแบบทะเบียนโดยตรง จึงไม่ถามผู้ใช้อีก
+  bool isMember = isMemberPlate(plate);
 
   bool? lostTicket = readYesNo('Lost ticket?');
   if (lostTicket == null) return null;
