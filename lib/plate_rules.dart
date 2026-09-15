@@ -64,3 +64,49 @@ bool isMemberPlate(String plate) {
   //       ใครพิมพ์ "12-" ก็จะได้ส่วนลดสมาชิกไปฟรี ๆ
   return index + 1 < input.length;
 }
+
+// ตัวอักษรอังกฤษที่นับว่าเป็น "ตัวอักษร" ในกฎนี้
+// เก็บเฉพาะตัวพิมพ์ใหญ่ เพราะ _isLetter แปลงเป็นตัวใหญ่ก่อนเทียบอยู่แล้ว
+const String _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+// ตัวอักษรตัวนี้เป็นตัวอักษรอังกฤษหรือเปล่า
+// แปลงเป็นตัวพิมพ์ใหญ่ก่อนเทียบ จะได้รับทั้ง ABC และ abc
+bool _isLetter(String character) {
+  return _letters.contains(character.toUpperCase());
+}
+
+// ทะเบียนแบบไหนถือว่าเป็นมอเตอร์ไซค์
+//
+// กติกาคือ สามตัวท้ายสุดต้องเป็นตัวอักษรอังกฤษทั้งหมด
+//
+//   12-ABC    เป็นมอเตอร์ไซค์   สามตัวท้าย A B C เป็นตัวอักษร
+//   12-ABCD   เป็นมอเตอร์ไซค์   ดูแค่สามตัวท้าย คือ B C D
+//   ABC       เป็นมอเตอร์ไซค์   ทั้งทะเบียนเป็นตัวอักษรพอดี
+//   ABC123    ไม่ใช่            สามตัวท้ายเป็นตัวเลข
+//   12-AB     ไม่ใช่            มีตัวอักษรท้ายแค่ 2 ตัว
+//   AB        ไม่ใช่            ทั้งทะเบียนสั้นกว่า 3 ตัว
+bool isMotorcyclePlate(String plate) {
+  String input = plate.trim();
+
+  // ทะเบียนสั้นกว่า 3 ตัว ย่อมไม่มีตัวอักษรท้ายครบ 3 ตัว
+  if (input.length < 3) {
+    return false;
+  }
+
+  // ตัดเอาเฉพาะสามตัวท้ายออกมาดู
+  //
+  //   ทะเบียน   1  2  -  A  B  C
+  //   ตำแหน่ง   0  1  2  3  4  5
+  //                      \-----/
+  //                      สามตัวท้ายคือ ABC
+  String lastThree = input.substring(input.length - 3);
+
+  // ต้องเป็นตัวอักษรครบทั้งสามตัว เจอตัวที่ไม่ใช่แม้แต่ตัวเดียวก็ตกทันที
+  for (int index = 0; index < lastThree.length; index++) {
+    if (!_isLetter(lastThree[index])) {
+      return false;
+    }
+  }
+
+  return true;
+}
