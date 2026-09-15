@@ -60,7 +60,7 @@ ParkingTransaction? readTransaction() {
   String? plate = readPlate();
   if (plate == null) return null;
 
- // ถ้าทะเบียนบอกประเภทได้ ใช้เลย ถ้าบอกไม่ได้(null) จึงค่อยถามเจ้าหน้าที่ กฏย้ายไปที่ plate rule
+  // ถ้าทะเบียนบอกประเภทได้ ใช้เลย ถ้าบอกไม่ได้(null) จึงค่อยถามเจ้าหน้าที่ กฏย้ายไปที่ plate rule
   String? vehicleType = vehicleTypeFromPlate(plate) ?? readVehicleType();
   if (vehicleType == null) return null;
 

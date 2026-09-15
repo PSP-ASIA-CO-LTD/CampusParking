@@ -92,4 +92,80 @@ void main() {
     expect(isMemberPlate('12-ABC'), isTrue);
     expect(isMotorcyclePlate('12-ABC'), isTrue);
   });
+
+  //ทะเบียนที่เข้ากฎรถเก๋ง
+  test('Two letters and three digits should be a car', () {
+    expect(isCarPlate('AB123'), isTrue);
+  });
+
+  test('Two letters and four digits should be a car', () {
+    expect(isCarPlate('AB1234'), isTrue);
+  });
+
+  test('Lower case letters should count for the car rule too', () {
+    expect(isCarPlate('ab1234'), isTrue);
+  });
+
+  test('Surrounding spaces should not change the car result', () {
+    expect(isCarPlate('  AB1234  '), isTrue);
+  });
+
+  //ทะเบียนที่ไม่เข้ากฎรถเก๋ง
+  test('One leading letter is not enough to be a car', () {
+    expect(isCarPlate('A1234'), isFalse);
+  });
+
+  test('Three leading letters should not be a car', () {
+    expect(isCarPlate('ABC123'), isFalse);
+  });
+
+  test('Only two trailing digits should not be a car', () {
+    expect(isCarPlate('AB12'), isFalse);
+  });
+
+  test('Five trailing digits should not be a car', () {
+    expect(isCarPlate('AB12345'), isFalse);
+  });
+
+  test('A letter after the digits should not be a car', () {
+    expect(isCarPlate('AB1234C'), isFalse);
+  });
+
+  test('A member plate should not be a car plate', () {
+    expect(isCarPlate('12-ABC'), isFalse);
+  });
+
+  //กฎรถเก๋งกับกฎมอเตอร์ไซค์ตอบคำถามเดียวกัน จึงต้องพิสูจน์ว่าไม่มีวันชนกัน
+  test('No plate can be both a car plate and a motorcycle plate', () {
+    List<String> plates = [
+      'AB1234',
+      'AB123',
+      'ab1234',
+      '12-ABC',
+      '12-ABCD',
+      'ABC',
+      'ABC123',
+    ];
+
+    for (String plate in plates) {
+      expect(
+        isCarPlate(plate) && isMotorcyclePlate(plate),
+        isFalse,
+        reason: 'ทะเบียน $plate เข้าทั้งสองกฎ ซึ่งไม่ควรเกิดขึ้น',
+      );
+    }
+  });
+
+  //ฟังก์ชันที่รวมกฎประเภทรถไว้ที่เดียว ต้องครบทั้งสามทางออก
+  test('vehicleTypeFromPlate reads a motorcycle from the plate', () {
+    expect(vehicleTypeFromPlate('12-ABC'), 'motorcycle');
+  });
+
+  test('vehicleTypeFromPlate reads a car from the plate', () {
+    expect(vehicleTypeFromPlate('AB1234'), 'car');
+  });
+
+  test('vehicleTypeFromPlate returns null when the plate says nothing', () {
+    expect(vehicleTypeFromPlate('ABC123'), isNull);
+  });
 }

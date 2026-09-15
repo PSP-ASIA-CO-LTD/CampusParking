@@ -380,21 +380,24 @@ void main() {
     expect(result.finalFee, 100);
   });
 
-  test('Car parked for a very long time should still be capped at 100 baht', () {
-    final calculator = ParkingFeeCalculator();
-    final transaction = ParkingTransaction(
-      plate: 'ABC123',
-      vehicleType: 'car',
-      duration: 999999,
-      isMember: false,
-      lostTicket: false,
-    );
+  test(
+    'Car parked for a very long time should still be capped at 100 baht',
+    () {
+      final calculator = ParkingFeeCalculator();
+      final transaction = ParkingTransaction(
+        plate: 'ABC123',
+        vehicleType: 'car',
+        duration: 999999,
+        isMember: false,
+        lostTicket: false,
+      );
 
-    final result = calculator.calculateFee(transaction);
+      final result = calculator.calculateFee(transaction);
 
-    expect(result.normalFee, 100);
-    expect(result.finalFee, 100);
-  });
+      expect(result.normalFee, 100);
+      expect(result.finalFee, 100);
+    },
+  );
 
   //more motorcycle boundary cases
   test('Motorcycle parked for 121 minutes should cost 30 baht', () {
@@ -463,22 +466,25 @@ void main() {
   });
 
   //member discount combined with other rules
-  test('Member car should get the discount after the maximum fee is applied', () {
-    final calculator = ParkingFeeCalculator();
-    final transaction = ParkingTransaction(
-      plate: 'ABC123',
-      vehicleType: 'car',
-      duration: 500,
-      isMember: true,
-      lostTicket: false,
-    );
+  test(
+    'Member car should get the discount after the maximum fee is applied',
+    () {
+      final calculator = ParkingFeeCalculator();
+      final transaction = ParkingTransaction(
+        plate: 'ABC123',
+        vehicleType: 'car',
+        duration: 500,
+        isMember: true,
+        lostTicket: false,
+      );
 
-    final result = calculator.calculateFee(transaction);
+      final result = calculator.calculateFee(transaction);
 
-    expect(result.normalFee, 100);
-    expect(result.discount, 20);
-    expect(result.finalFee, 80);
-  });
+      expect(result.normalFee, 100);
+      expect(result.discount, 20);
+      expect(result.finalFee, 80);
+    },
+  );
 
   test('Member motorcycle parked for 500 minutes should cost 40 baht', () {
     final calculator = ParkingFeeCalculator();
