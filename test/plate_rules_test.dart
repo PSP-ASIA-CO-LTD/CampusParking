@@ -44,4 +44,52 @@ void main() {
   test('A plate whose hyphen comes after letters should not be a member', () {
     expect(isMemberPlate('AB-123'), isFalse);
   });
+
+  //ทะเบียนที่เข้ากฎมอเตอร์ไซค์
+  test('A plate ending with three letters should be a motorcycle', () {
+    expect(isMotorcyclePlate('12-ABC'), isTrue);
+  });
+
+  test('Only the last three characters should matter', () {
+    expect(isMotorcyclePlate('12-ABCD'), isTrue);
+  });
+
+  test('A plate of exactly three letters should be a motorcycle', () {
+    expect(isMotorcyclePlate('ABC'), isTrue);
+  });
+
+  test('Lower case letters should count as letters', () {
+    expect(isMotorcyclePlate('12-abc'), isTrue);
+  });
+
+  test('Surrounding spaces should not change the motorcycle result', () {
+    expect(isMotorcyclePlate('  12-ABC  '), isTrue);
+  });
+
+  //ทะเบียนที่ไม่เข้ากฎมอเตอร์ไซค์
+  test('A plate ending with digits should not be a motorcycle', () {
+    expect(isMotorcyclePlate('ABC123'), isFalse);
+  });
+
+  test('A plate with two trailing letters should not be a motorcycle', () {
+    expect(isMotorcyclePlate('12-AB'), isFalse);
+  });
+
+  test('A plate shorter than three characters is not a motorcycle', () {
+    expect(isMotorcyclePlate('AB'), isFalse);
+  });
+
+  test('A plate made of digits only should not be a motorcycle', () {
+    expect(isMotorcyclePlate('1234'), isFalse);
+  });
+
+  test('A plate ending with one digit should not be a motorcycle', () {
+    expect(isMotorcyclePlate('12-AB1'), isFalse);
+  });
+
+  //กฎสองข้อทำงานพร้อมกันได้ เคสนี้จดข้อตกลงนั้นไว้เป็นลายลักษณ์อักษร
+  test('A plate can be both a member plate and a motorcycle plate', () {
+    expect(isMemberPlate('12-ABC'), isTrue);
+    expect(isMotorcyclePlate('12-ABC'), isTrue);
+  });
 }

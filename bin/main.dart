@@ -64,7 +64,13 @@ ParkingTransaction? readTransaction() {
   String vehicleType;
   if (isMotorcyclePlate(plate)) {
     vehicleType = 'motorcycle';
-  } else {
+  } else
+
+  if (isCarPlate(plate))  { 
+    vehicleType = 'car';
+  }
+  
+  {
     // ทะเบียนไม่ได้บอกประเภท จึงต้องถามเจ้าหน้าที่ตามปกติ
     String? answer = readVehicleType();
     if (answer == null) return null;

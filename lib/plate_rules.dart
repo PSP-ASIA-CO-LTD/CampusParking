@@ -110,3 +110,27 @@ bool isMotorcyclePlate(String plate) {
 
   return true;
 }
+
+bool isCarPlate(String plate) {
+  String input = plate.trim();
+
+//5-6 ห้ามมากหรือน้อยกว่า
+if (input.length < 5 || input.length > 6) {
+return false;
+}
+
+//ต้อง 2 ตัวแรกเป็นตัวอักษร หน้าเป็น0 และ 1 ตัว ไม่งั้นผิด
+if (!_isLetter(input[0]) || !_isLetter(input[1])) {
+return false; 
+}
+
+//ตั้งแต่ตัวที่ 3 ต้องเป็นตัวเลข
+for (int index = 2; index <input.length; index++) {
+  if (!_isDigit(input[index])) {
+    return false;
+  }
+} 
+
+return true;
+
+}
