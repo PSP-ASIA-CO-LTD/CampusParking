@@ -60,8 +60,16 @@ ParkingTransaction? readTransaction() {
   String? plate = readPlate();
   if (plate == null) return null;
 
-  String? vehicleType = readVehicleType();
-  if (vehicleType == null) return null;
+  // ทะเบียนที่ลงท้ายด้วยตัวอักษร 3 ตัว เป็นมอเตอร์ไซค์อยู่แล้ว จึงไม่ต้องถาม
+  String vehicleType;
+  if (isMotorcyclePlate(plate)) {
+    vehicleType = 'motorcycle';
+  } else {
+    // ทะเบียนไม่ได้บอกประเภท จึงต้องถามเจ้าหน้าที่ตามปกติ
+    String? answer = readVehicleType();
+    if (answer == null) return null;
+    vehicleType = answer;
+  }
 
   int? duration = readDuration();
   if (duration == null) return null;
