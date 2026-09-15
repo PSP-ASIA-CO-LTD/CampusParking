@@ -133,3 +133,22 @@ bool isCarPlate(String plate) {
 
   return true;
 }
+
+// อ่านประเภทรถออกจากทะเบียน
+//
+// คืน null แปลว่าทะเบียนบอกไม่ได้ ผู้เรียกต้องไปถามเจ้าหน้าที่เอง
+//
+// รวมกฎเรื่องประเภทรถไว้ที่เดียว
+// ใช้ return แทนการใส่ค่าลงตัวแปร เพราะ return ออกจากฟังก์ชันทันที
+// จึงไม่มีทางถูกบรรทัดถัดไปเขียนทับ
+String? vehicleTypeFromPlate(String plate) {
+  if (isMotorcyclePlate(plate)) {
+    return 'motorcycle';
+  }
+
+  if (isCarPlate(plate)) {
+    return 'car';
+  }
+
+  return null;
+}
