@@ -11,7 +11,7 @@
 | รองรับรถ | car / motorcycle / other |
 | กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, บัตรหายไม่คิดค่าปรับ |
 | โครงสร้าง | `bin/main.dart` 52 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 4 class แยกความรับผิดชอบ |
-| การทดสอบ | 19 unit test อัตโนมัติ (`dart test`) + 42 manual test case |
+| การทดสอบ | 73 unit test อัตโนมัติ (`dart test`) + 48 manual test case |
 | คุณภาพโค้ด | `dart format` ผ่าน • `dart analyze` ไม่มี issue • GitHub Actions รันเทสทุกครั้งที่ push |
 
 ## สารบัญ
@@ -26,7 +26,7 @@
 - [Business Rule Precedence](#business-rule-precedence) — ลำดับของกฎและเหตุผล
 - [Dart Documentation Researched](#dart-documentation-researched) — เอกสารที่ค้นและนำมาใช้
 - [Effective Dart Guidelines Used](#effective-dart-guidelines-used) — แนวปฏิบัติที่นำมาใช้จริง
-- [Test Matrix](#test-matrix) — ผลทดสอบ 42 เคส
+- [Test Matrix](#test-matrix) — ผลทดสอบ 48 เคส
 
 เอกสารประกอบเพิ่มเติมอยู่ในโฟลเดอร์ [`docs/`](docs/)
 
@@ -413,92 +413,141 @@ String input = line.trim();
 
 # Test Matrix
 
-รวม 42 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state)
+รวม 48 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state) บวกกลุ่มกฎทะเบียนที่เพิ่มเข้ามาภายหลัง
 
-**ผลการทดสอบ: ผ่าน 37 เคส** (รันเมื่อ 8 กันยายน 2026 ด้วย Dart SDK 3.13)
+**ผลการทดสอบ: รอรันใหม่ทั้งหมด**
 
-> อีก 5 เคส (T29, T30, T31, T34, T42) เป็นเคสที่เกี่ยวกับบัตรหาย กฎถูกเปลี่ยนภายหลังเป็น "บัตรหายไม่คิดค่าปรับ" ค่า Expected จึงถูกปรับใหม่แล้ว และช่อง Actual รอการรันจริงอีกครั้ง
+> กฎข้อ 4 (ทะเบียนบอกว่าเป็นสมาชิก) และข้อ 5 (ทะเบียนบอกว่าเป็นมอเตอร์ไซค์) ทำให้ลำดับคำถามของโปรแกรมเปลี่ยนไป ลำดับ input ที่ใช้รันเมื่อ 8 กันยายน 2026 จึงใช้ไม่ได้อีกต่อไป ตารางนี้เขียน Expected ใหม่ตามกฎปัจจุบันแล้ว และเว้นช่อง Actual ไว้จนกว่าจะได้รันจริงทุกเคส
+
+## ลำดับคำถามของโปรแกรม
+
+```text
+เมนู -> ทะเบียน -> [ประเภทรถ] -> นาที -> Lost ticket -> กลับเมนู
+                    ^^^^^^^^^^
+                    ถามเฉพาะตอนที่ทะเบียนบอกประเภทไม่ได้
+```
+
+คำถาม Member ถูกตัดออกไปแล้ว เพราะกฎข้อ 4 ตัดสินจากทะเบียนโดยตรง
+
+## ทะเบียนมาตรฐานที่ใช้ในตาราง
+
+เลือกไว้ 4 แบบเพื่อคุมตัวแปรให้ชัด ว่าเคสไหนต้องการให้ทะเบียนบอกอะไรบ้าง
+
+| ทะเบียน | เข้ากฎอะไร | ตอนกรอกจะเป็นยังไง |
+|---|---|---|
+| `ABC123` | ไม่เข้ากฎไหนเลย | **ถาม**ประเภทรถ และไม่ใช่สมาชิก |
+| `12-1234` | กฎข้อ 4 | **ถาม**ประเภทรถ แต่เป็นสมาชิก |
+| `AB1234` | กฎรถเก๋ง | **ไม่ถาม** เป็น car และไม่ใช่สมาชิก |
+| `12-ABC` | กฎข้อ 4 + ข้อ 5 | **ไม่ถาม** เป็น motorcycle และเป็นสมาชิก |
 
 ## วิธีรัน
 
-รันทีละเคสด้วยการป้อน input ล่วงหน้า:
+รันทีละเคสด้วยการป้อน input ล่วงหน้า
 
 ```bash
-printf '1\nABC123\ncar\n16\nn\nn\n3\n' | dart run bin/main.dart
+printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 ```
 
-ลำดับที่โปรแกรมถามคือ เมนู → ทะเบียน → ประเภทรถ → นาที → Member → Lost ticket → กลับเมนู
+ในตารางด้านล่าง ช่อง Scenario เขียน input ที่ต้องพิมพ์ไว้ให้แล้ว คั่นแต่ละบรรทัดด้วย `·` โดยไม่รวมเลข `3` (Exit) ที่ต้องพิมพ์ปิดท้ายทุกเคส
 
 ## Boundary cases
 
-| ID   |    Input / Scenario   |   Expected  | Actual | Pass? |
-|------|-----------------------|-------------|--------|-------|
-| T01 | car, 0 min | 0.00 | 0.00 | Pass |
-| T02 | car, 15 min | 0.00 | 0.00 | Pass |
-| T03 | car, 16 min | 20.00 | 20.00 | Pass |
-| T04 | car, 60 min | 20.00 | 20.00 | Pass |
-| T05 | car, 61 min | 40.00 | 40.00 | Pass |
-| T06 | car, 120 min | 40.00 | 40.00 | Pass |
-| T07 | car, 121 min | 60.00 | 60.00 | Pass |
-| T08 | car, 500 min | 100.00(cap) | 100.00 | Pass |
-| T09 | motorcycle, 15 min | 0.00 | 0.00 | Pass |
-| T10 | motorcycle, 16 min | 10.00 | 10.00 | Pass |
-| T11 | motorcycle, 61 min | 20.00 | 20.00 | Pass |
-| T12 | motorcycle, 121 min | 30.00 | 30.00 | Pass |
-| T13 | motorcycle, 500 min | 50.00 (cap) | 50.00 | Pass |
-| T14 | car, 999999 min | 100.00 (cap) | 100.00 | Pass |
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T01 | car 0 นาที — `1 · ABC123 · car · 0 · n` | 0.00 |  |  |
+| T02 | car 15 นาที — `1 · ABC123 · car · 15 · n` | 0.00 |  |  |
+| T03 | car 16 นาที — `1 · ABC123 · car · 16 · n` | 20.00 |  |  |
+| T04 | car 60 นาที — `1 · ABC123 · car · 60 · n` | 20.00 |  |  |
+| T05 | car 61 นาที — `1 · ABC123 · car · 61 · n` | 40.00 |  |  |
+| T06 | car 120 นาที — `1 · ABC123 · car · 120 · n` | 40.00 |  |  |
+| T07 | car 121 นาที — `1 · ABC123 · car · 121 · n` | 60.00 |  |  |
+| T08 | car 500 นาที — `1 · ABC123 · car · 500 · n` | 100.00 (cap) |  |  |
+| T09 | motorcycle 15 นาที — `1 · ABC123 · motorcycle · 15 · n` | 0.00 |  |  |
+| T10 | motorcycle 16 นาที — `1 · ABC123 · motorcycle · 16 · n` | 10.00 |  |  |
+| T11 | motorcycle 61 นาที — `1 · ABC123 · motorcycle · 61 · n` | 20.00 |  |  |
+| T12 | motorcycle 121 นาที — `1 · ABC123 · motorcycle · 121 · n` | 30.00 |  |  |
+| T13 | motorcycle 500 นาที — `1 · ABC123 · motorcycle · 500 · n` | 50.00 (cap) |  |  |
+| T14 | car 999999 นาที — `1 · ABC123 · car · 999999 · n` | 100.00 (cap) |  |  |
 
 ## Invalid input
 
-|  ID |      Input / Scenario   |              Expected              | Actual | Pass? |
-|-----|-------------------------|------------------------------------|--------|-------|
-| T15 | vehicle type = `CAR` | รับเป็น car, 20.00 | รับเป็น car, 20.00 | Pass |
-| T16 | vehicle type = ` car ` | รับเป็น car, 20.00 | รับเป็น car, 20.00 | Pass |
-| T17 | vehicle type = `truck` | Invalid vehicle type แล้วถามใหม่ | Invalid vehicle type แล้วถามใหม่ | Pass |
-| T18 | vehicle type = (ว่าง) | Invalid vehicle type แล้วถามใหม่ | Invalid vehicle type แล้วถามใหม่ | Pass |
-| T19 | duration = `abc` | Invalid number แล้วถามใหม่ ไม่ crash | Invalid number แล้วถามใหม่ | Pass |
-| T20 | duration = `-1` | Duration cannot be negative | Duration cannot be negative | Pass |
-| T21 | duration = (ว่าง) | Invalid number แล้วถามใหม่ | Invalid number แล้วถามใหม่ | Pass |
-| T22 | duration = `0` | ยอมรับ, 0.00 | 0.00 | Pass |
-| T23 | member = `x` | Please enter y or n | Please enter y or n | Pass |
-| T24 | เมนู = `9` | Invalid choice, ไม่ crash | Invalid choice, ไม่ crash | Pass |
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T15 | ประเภทรถ = `CAR` — `1 · ABC123 · CAR · 16 · n` | รับเป็น car, 20.00 |  |  |
+| T16 | ประเภทรถ = ` car ` (มีช่องว่าง) | รับเป็น car, 20.00 |  |  |
+| T17 | ประเภทรถ = `truck` | Invalid vehicle type แล้วถามใหม่ |  |  |
+| T18 | ประเภทรถ = (ว่าง) | Invalid vehicle type แล้วถามใหม่ |  |  |
+| T19 | นาที = `abc` | Invalid number แล้วถามใหม่ ไม่ crash |  |  |
+| T20 | นาที = `-1` | Duration cannot be negative |  |  |
+| T21 | นาที = (ว่าง) | Invalid number แล้วถามใหม่ |  |  |
+| T22 | นาที = `0` | ยอมรับ, 0.00 |  |  |
+| T23 | lost ticket = `x` — `1 · ABC123 · car · 16 · x` | Please enter y or n แล้วถามใหม่ |  |  |
+| T24 | เมนู = `9` | Invalid choice, ไม่ crash |  |  |
+
+> T23 เดิมทดสอบการตอบคำถาม Member ผิด แต่คำถามนั้นถูกตัดออกไปตามกฎข้อ 4 แล้ว จึงย้ายไปทดสอบที่คำถาม Lost ticket แทน ซึ่งใช้ตรรกะ y/n ตัวเดียวกัน
 
 ## Business-rule interaction
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T25 | car 500 min, non-member | 100.00 | 100.00 | Pass |
-| T26 | car 500 min, member | normal 100 / discount 20 / final 80.00 | normal 100 / discount 20 / final 80.00 | Pass |
-| T27 | motorcycle 500 min, member | normal 50 / discount 10 / final 40.00 | normal 50 / discount 10 / final 40.00 | Pass |
-| T28 | car 10 min, member (ฟรี + สมาชิก) | 0.00 | 0.00 | Pass |
-| T29 | car 30 min, lost ticket | 20.00 (ไม่มีค่าปรับ) |  |  |
-| T30 | car 30 min, member + lost ticket | normal 20 / discount 4 / final 16.00 |  |  |
-| T31 | motorcycle 30 min, lost ticket | 10.00 |  |  |
-| T32 | car 185 min, member | normal 80 / discount 16 / final 64.00 | normal 80 / discount 16 / final 64.00 | Pass |
+| T25 | car 500 นาที ไม่ใช่สมาชิก — `1 · ABC123 · car · 500 · n` | 100.00 |  |  |
+| T26 | car 500 นาที สมาชิก — `1 · 12-1234 · car · 500 · n` | normal 100 / discount 20 / final 80.00 |  |  |
+| T27 | motorcycle 500 นาที สมาชิก — `1 · 12-1234 · motorcycle · 500 · n` | normal 50 / discount 10 / final 40.00 |  |  |
+| T28 | car 10 นาที สมาชิก (ฟรี + สมาชิก) — `1 · 12-1234 · car · 10 · n` | 0.00 |  |  |
+| T29 | car 30 นาที บัตรหาย — `1 · ABC123 · car · 30 · y` | 20.00 (ไม่มีค่าปรับ) |  |  |
+| T30 | car 30 นาที สมาชิก + บัตรหาย — `1 · 12-1234 · car · 30 · y` | normal 20 / discount 4 / final 16.00 |  |  |
+| T31 | motorcycle 30 นาที บัตรหาย — `1 · ABC123 · motorcycle · 30 · y` | 10.00 |  |  |
+| T32 | car 185 นาที สมาชิก — `1 · 12-1234 · car · 185 · n` | normal 80 / discount 16 / final 64.00 |  |  |
 
 ## Application state
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T33 | ดู summary ก่อนทำรายการใด ๆ | ทุกค่าเป็น 0, revenue 0.00 | ทุกค่าเป็น 0, revenue 0.00 | Pass |
-| T34 | 3 รายการตาม scenario ข้อ 14 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 |  |  |
-| T35 | ยกเลิกกลางคัน แล้วดู summary | total ยังเป็น 1, revenue 20.00 | total 1, revenue 20.00 | Pass |
-| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | ออกโปรแกรมได้ปกติ | Pass |
+| T33 | ดู summary ก่อนทำรายการใด ๆ — `2` | ทุกค่าเป็น 0, revenue 0.00 |  |  |
+| T34 | 3 รายการตาม scenario ข้อ 14 (ดูรายละเอียดใต้ตาราง) | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 |  |  |
+| T35 | ยกเลิกกลางคัน แล้วดู summary — `1 · ABC123 · car · 30 · n · 1 · ABC123 · car · cancel · 2` | total ยังเป็น 1, revenue 20.00 |  |  |
+| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ |  |  |
+
+**รายละเอียด T34** ทำสามรายการติดกันแล้วกด `2` ดูยอดสรุป
+
+```text
+1 · ABC123  · car        · 30  · n      ->  20.00
+1 · 12-1234 · motorcycle · 121 · n      ->  normal 30 / discount 6 / final 24.00
+1 · 12-1234 · car        · 10  · y      ->  0.00  (ฟรีเพราะไม่เกิน 15 นาที)
+2                                       ->  revenue 20 + 24 + 0 = 44.00
+```
+
+## Plate rules
+
+กลุ่มนี้เพิ่มเข้ามาพร้อมกฎข้อ 4 และข้อ 5 จุดที่ต้องสังเกตคือ **โปรแกรมถามหรือไม่ถามประเภทรถ** ไม่ใช่แค่ตัวเลขบนใบเสร็จ
+
+| ID | Input / Scenario | Expected | Actual | Pass? |
+|---|---|---|---|---|
+| T43 | ทะเบียนเข้ากฎทั้งสองข้อ — `1 · 12-ABC · 30 · n` | ไม่ถามประเภทรถ, เป็น motorcycle, normal 10 / discount 2 / final 8.00 |  |  |
+| T44 | ทะเบียนเข้ากฎรถเก๋ง — `1 · AB1234 · 30 · n` | ไม่ถามประเภทรถ, เป็น car, 20.00 ไม่มีส่วนลด |  |  |
+| T45 | ทะเบียนไม่เข้ากฎไหนเลย — `1 · ABC123 · car · 30 · n` | ถามประเภทรถตามปกติ, 20.00 ไม่มีส่วนลด |  |  |
+| T46 | ทะเบียนเข้าเฉพาะกฎสมาชิก — `1 · 12-1234 · car · 30 · n` | ถามประเภทรถ แต่มีบรรทัดส่วนลด, final 16.00 |  |  |
+| T47 | ทะเบียน `12-` (ไม่มีอะไรต่อท้ายขีด) — `1 · 12- · car · 30 · n` | ไม่ใช่สมาชิก ถามประเภทรถ, 20.00 |  |  |
+| T48 | ทะเบียนพิมพ์เล็ก — `1 · 12-abc · 30 · n` | ได้ผลเหมือน T43 ทุกประการ |  |  |
 
 ## Extra cases
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | Plate cannot be empty แล้วถามใหม่ | Pass |
-| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | Transaction cancelled, summary 0 | Pass |
-| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | Transaction cancelled แล้วปิดโปรแกรมเอง | Pass |
-| T40 | other, 30 นาที | 30.00 | 30.00 | Pass |
-| T41 | other, 500 นาที | 150.00 (cap) | 150.00 | Pass |
-| T42 | other 30 min, lost ticket | 30.00 |  |  |
+| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ |  |  |
+| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 |  |  |
+| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ |  |  |
+| T40 | other 30 นาที — `1 · ABC123 · other · 30 · n` | 30.00 |  |  |
+| T41 | other 500 นาที — `1 · ABC123 · other · 500 · n` | 150.00 (cap) |  |  |
+| T42 | other 30 นาที บัตรหาย — `1 · ABC123 · other · 30 · y` | 30.00 |  |  |
 
 ## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
 
-เคสในกลุ่ม Boundary และ Business-rule interaction ส่วนใหญ่มี unit test ใน `test/parking_fee_calculator_test.dart` ครอบคลุมอยู่แล้ว (19 เคส) การทดสอบด้วยมือในตารางนี้จึงเป็นการยืนยันซ้ำผ่านหน้าจอจริง ส่วนกลุ่ม Invalid input และ Application state เป็นกลุ่มที่มีเฉพาะการทดสอบด้วยมือ เพราะตรรกะ validation อยู่ในลูปเดียวกับ `stdin.readLineSync()` จึงเรียกทดสอบแยกไม่ได้
+เคสในกลุ่ม Boundary, Business-rule interaction และ Plate rules ส่วนใหญ่มี unit test ครอบคลุมอยู่แล้ว (73 เคสอัตโนมัติทั้งโปรเจกต์) การทดสอบด้วยมือในตารางนี้จึงเป็นการยืนยันซ้ำผ่านหน้าจอจริง
+
+ส่วนกลุ่ม Invalid input และ Application state เป็นกลุ่มที่มีเฉพาะการทดสอบด้วยมือ เพราะตรรกะ validation อยู่ในลูปเดียวกับ `stdin.readLineSync()` จึงเรียกทดสอบแยกไม่ได้
+
+กลุ่ม Plate rules เป็นกรณีพิเศษ คือกฎเองมี unit test ครบแล้ว แต่สิ่งที่ unit test ยืนยันแทนไม่ได้คือ **โปรแกรมถามหรือไม่ถามคำถามไหนบ้าง** เพราะจุดนั้นอยู่ใน `bin/main.dart` ที่ผูกกับ `stdin`
 
 ---
 
