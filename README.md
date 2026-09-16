@@ -28,6 +28,7 @@
 - [Dart Documentation Researched](#dart-documentation-researched) — เอกสารที่ค้นและนำมาใช้
 - [Effective Dart Guidelines Used](#effective-dart-guidelines-used) — แนวปฏิบัติที่นำมาใช้จริง
 - [Test Matrix](#test-matrix) — ผลทดสอบ 48 เคส
+- [docs/testing.md](docs/testing.md) — **กระบวนการทดสอบและโค้ดที่ใช้ทดสอบ** (โจทย์ข้อ 1)
 
 เอกสารประกอบเพิ่มเติมอยู่ในโฟลเดอร์ [`docs/`](docs/)
 
@@ -490,9 +491,11 @@ String input = line.trim();
 
 # Test Matrix
 
+อธิบายกระบวนการทดสอบทั้งหมดไว้ที่ **[docs/testing.md](docs/testing.md)** ส่วนตารางด้านล่างคือรายการเคสที่ทดสอบด้วยมือ
+
 รวม 48 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state) บวกกลุ่มกฎทะเบียนที่เพิ่มเข้ามาภายหลัง
 
-**ผลการทดสอบ: รอรันใหม่ทั้งหมด**
+**ผลการทดสอบ: กรอกแล้ว 4 จาก 48 เคส ผ่านทั้ง 4** (เริ่มรันใหม่เมื่อ 16 กันยายน 2026 ด้วย Dart SDK 3.13 บน macOS)
 
 > กฎข้อ 4 (ทะเบียนบอกว่าเป็นสมาชิก) และข้อ 5 (ทะเบียนบอกว่าเป็นมอเตอร์ไซค์) ทำให้ลำดับคำถามของโปรแกรมเปลี่ยนไป ลำดับ input ที่ใช้รันเมื่อ 8 กันยายน 2026 จึงใช้ไม่ได้อีกต่อไป ตารางนี้เขียน Expected ใหม่ตามกฎปัจจุบันแล้ว และเว้นช่อง Actual ไว้จนกว่าจะได้รันจริงทุกเคส
 
@@ -531,7 +534,7 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T01 | car 0 นาที — `1 · ABC123 · car · 0 · n` | 0.00 |  |  |
+| T01 | car 0 นาที — `1 · ABC123 · car · 0 · n` | 0.00 | Final fee 0.00 THB | Pass |
 | T02 | car 15 นาที — `1 · ABC123 · car · 15 · n` | 0.00 |  |  |
 | T03 | car 16 นาที — `1 · ABC123 · car · 16 · n` | 20.00 |  |  |
 | T04 | car 60 นาที — `1 · ABC123 · car · 60 · n` | 20.00 |  |  |
@@ -539,7 +542,7 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 | T06 | car 120 นาที — `1 · ABC123 · car · 120 · n` | 40.00 |  |  |
 | T07 | car 121 นาที — `1 · ABC123 · car · 121 · n` | 60.00 |  |  |
 | T08 | car 500 นาที — `1 · ABC123 · car · 500 · n` | 100.00 (cap) |  |  |
-| T09 | motorcycle 15 นาที — `1 · ABC123 · motorcycle · 15 · n` | 0.00 |  |  |
+| T09 | motorcycle 15 นาที — `1 · ABC123 · motorcycle · 15 · n` | 0.00 | Final fee 0.00 THB | Pass |
 | T10 | motorcycle 16 นาที — `1 · ABC123 · motorcycle · 16 · n` | 10.00 |  |  |
 | T11 | motorcycle 61 นาที — `1 · ABC123 · motorcycle · 61 · n` | 20.00 |  |  |
 | T12 | motorcycle 121 นาที — `1 · ABC123 · motorcycle · 121 · n` | 30.00 |  |  |
@@ -557,7 +560,7 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 | T19 | นาที = `abc` | Invalid number แล้วถามใหม่ ไม่ crash |  |  |
 | T20 | นาที = `-1` | Duration cannot be negative |  |  |
 | T21 | นาที = (ว่าง) | Invalid number แล้วถามใหม่ |  |  |
-| T22 | นาที = `0` | ยอมรับ, 0.00 |  |  |
+| T22 | นาที = `0` (ใช้ผลรันเดียวกับ T01) | ยอมรับ, 0.00 | Duration 0 minutes, Final fee 0.00 THB | Pass |
 | T23 | lost ticket = `x` — `1 · ABC123 · car · 16 · x` | Please enter y or n แล้วถามใหม่ |  |  |
 | T24 | เมนู = `9` | Invalid choice, ไม่ crash |  |  |
 
@@ -614,7 +617,7 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 | T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ |  |  |
 | T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 |  |  |
 | T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ |  |  |
-| T40 | other 30 นาที — `1 · ABC123 · other · 30 · n` | 30.00 |  |  |
+| T40 | other 30 นาที — `1 · ABC123 · other · 30 · n` | 30.00 | Final fee 30.00 THB | Pass |
 | T41 | other 500 นาที — `1 · ABC123 · other · 500 · n` | 150.00 (cap) |  |  |
 | T42 | other 30 นาที บัตรหาย — `1 · ABC123 · other · 30 · y` | 30.00 |  |  |
 
