@@ -10,7 +10,7 @@
 | รันยังไง | `dart run bin/main.dart` |
 | รองรับรถ | car / motorcycle / other |
 | กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, บัตรหายไม่คิดค่าปรับ |
-| โครงสร้าง | `bin/main.dart` 52 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 4 class แยกความรับผิดชอบ |
+| โครงสร้าง | `bin/main.dart` 203 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 7 ไฟล์ — 5 class แยกความรับผิดชอบ บวกเมนูและกฎทะเบียนที่เขียนเป็นฟังก์ชัน |
 | การทดสอบ | 73 unit test อัตโนมัติ (`dart test`) + 48 manual test case |
 | คุณภาพโค้ด | `dart format` ผ่าน • `dart analyze` ไม่มี issue • GitHub Actions รันเทสทุกครั้งที่ push |
 
@@ -351,7 +351,7 @@ END IF
 | `String.toLowerCase()` | https://api.dart.dev/dart-core/String/toLowerCase.html | `readVehicleType()` / `readYesNo()` และการตรวจคำสั่ง cancel |
 | `String.isNotEmpty` | https://api.dart.dev/dart-core/String/isNotEmpty.html | `readPlate()` — ตรวจทะเบียนว่าง |
 | Operator `~/` (truncating division) | https://dart.dev/language/operators | `ParkingFeeCalculator` — คำนวณชั่วโมงแบบปัดขึ้น |
-| Classes / Constructors | https://dart.dev/language/classes | ทั้ง 4 class ใน `lib/` |
+| Classes / Constructors | https://dart.dev/language/classes | ทั้ง 5 class ใน `lib/` |
 | Getters | https://dart.dev/language/methods#getters-and-setters | `ParkingSummary` — เปิดให้อ่านค่าโดยไม่ให้เขียนทับ |
 | Null safety | https://dart.dev/null-safety | `String?` / `int?` / `bool?` ที่ฟังก์ชันรับ input คืนกลับมา |
 | Package layout (`bin/` vs `lib/`) | https://dart.dev/tools/pub/package-layout | เหตุผลที่ import ด้วย `package:campus_parking/...` |
