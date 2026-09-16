@@ -10,19 +10,20 @@
 | รันยังไง | `dart run bin/main.dart` |
 | รองรับรถ | car / motorcycle / other |
 | กฎการคิดเงิน | ฟรี 15 นาทีแรก, คิดเป็นชั่วโมงแบบปัดขึ้น, มีเพดานราคาต่อครั้ง, ส่วนลดสมาชิก 20%, บัตรหายไม่คิดค่าปรับ |
+| กฎทะเบียนรถ | รูปแบบของทะเบียนเป็นตัวบอกว่าเป็นสมาชิกหรือไม่ และบอกประเภทรถได้ในบางกรณี โปรแกรมจึงถามน้อยลง |
 | โครงสร้าง | `bin/main.dart` 203 บรรทัด ทำหน้าที่ CLI อย่างเดียว • `lib/` 7 ไฟล์ — 5 class แยกความรับผิดชอบ บวกเมนูและกฎทะเบียนที่เขียนเป็นฟังก์ชัน |
 | การทดสอบ | 73 unit test อัตโนมัติ (`dart test`) + 48 manual test case |
 | คุณภาพโค้ด | `dart format` ผ่าน • `dart analyze` ไม่มี issue • GitHub Actions รันเทสทุกครั้งที่ push |
 
 ## สารบัญ
 
-- [Project Overview](#project-overview) — โจทย์ ข้อมูลเข้า-ออก และกฎการคิดเงิน
+- [Project Overview](#project-overview) — โจทย์ ข้อมูลเข้า-ออก กฎการคิดเงิน และกฎทะเบียนรถ
 - [How to Run](#how-to-run) — คำสั่งรันและโครงสร้างโปรเจกต์
 - [Iteration 1 Design](#iteration-1-design) — การออกแบบรอบแรก
 - [Iteration 2 Changes](#iteration-2-changes) — เพิ่ม validation และกฎพิเศษ
 - [Iteration 3 Changes](#iteration-3-changes) — หลาย transaction และยอดสรุป
 - [Iteration 4 Refactoring](#iteration-4-refactoring) — จัดโครงสร้างและคุณภาพโค้ด
-- [Class Responsibilities](#class-responsibilities) — หน้าที่ของแต่ละ class
+- [Class Responsibilities](#class-responsibilities) — หน้าที่ของแต่ละ class และไฟล์ที่เขียนเป็นฟังก์ชัน
 - [Business Rule Precedence](#business-rule-precedence) — ลำดับของกฎและเหตุผล
 - [Dart Documentation Researched](#dart-documentation-researched) — เอกสารที่ค้นและนำมาใช้
 - [Effective Dart Guidelines Used](#effective-dart-guidelines-used) — แนวปฏิบัติที่นำมาใช้จริง
@@ -143,9 +144,13 @@ CampusParking/
 │   ├── parking_fee_calculator.dart   # business rules การคิดค่าจอด
 │   ├── parking_receipt.dart          # การแสดงใบเสร็จ
 │   ├── parking_summary.dart          # ยอดสะสมประจำวัน
-│   └── parking_menu.dart             # เมนูและยอดสรุปที่แสดงบนหน้าจอ
+│   ├── parking_menu.dart             # เมนูและยอดสรุปที่แสดงบนหน้าจอ
+│   └── plate_rules.dart              # กฎที่อ่านความหมายออกจากทะเบียนรถ
 ├── test/
-│   └── parking_fee_calculator_test.dart
+│   ├── parking_fee_calculator_test.dart
+│   ├── parking_summary_test.dart
+│   └── plate_rules_test.dart
+├── docs/                             # เอกสารประกอบ business rules และ flowchart
 ├── analysis_options.yaml
 ├── pubspec.yaml
 └── README.md
@@ -317,6 +322,24 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 - **What this class should NOT be responsible for:** ไม่ควรคำนวณค่าจอด ไม่ควรแก้ไขข้อมูลของ transaction และไม่ควรสะสมยอด revenue หรือ counter ของทั้งวัน
 
 
+## ไฟล์ที่เขียนเป็นฟังก์ชัน ไม่ใช่ class
+
+ใน `lib/` มีสองไฟล์ที่ไม่มี class อยู่เลย เพราะงานข้างในไม่ต้องจำสถานะอะไร รับค่าเข้าไปแล้วคืนคำตอบออกมาทันที ใน Dart งานลักษณะนี้เขียนเป็นฟังก์ชันระดับบนสุดได้เลย การสร้าง class ที่ไม่มี field จะเป็นการเพิ่มชั้นโดยไม่ได้อะไรกลับมา
+
+### `lib/plate_rules.dart`
+
+- **Responsibility:** รับผิดชอบการอ่านความหมายออกจากตัวทะเบียนรถ ว่าทะเบียนนั้นบอกอะไรได้บ้างเกี่ยวกับสถานะสมาชิกและประเภทรถ
+- **Important functions:** `isMemberPlate`, `isMotorcyclePlate`, `isCarPlate` และ `vehicleTypeFromPlate` ที่รวมกฎประเภทรถไว้ที่เดียวและคืน `null` เมื่อทะเบียนบอกไม่ได้
+- **Why this file exists:** เพราะกฎพวกนี้ไม่ยุ่งกับการรับ input และไม่พิมพ์อะไรออกหน้าจอ จึงเขียน unit test ครอบได้ครบทุกกรณีโดยไม่ต้องรันโปรแกรมจริง (35 เคส) ต่างจาก validation ของ input ที่ผูกอยู่กับ `stdin` จนทดสอบอัตโนมัติไม่ได้
+- **What this file should NOT be responsible for:** ไม่ควรถามหรืออ่านค่าจากผู้ใช้ ไม่ควรพิมพ์ข้อความใด ๆ ไม่ควรคำนวณค่าจอด และไม่ควรตัดสินใจแทนว่าจะทำอะไรต่อ หน้าที่คือตอบคำถามเท่านั้น
+
+### `lib/parking_menu.dart`
+
+- **Responsibility:** รับผิดชอบการพิมพ์เมนูหลักและหน้ายอดสรุปประจำวันออกหน้าจอ
+- **Important functions:** `printMainMenu`, `printDailySummary`
+- **Why this file exists:** เพื่อให้ `main.dart` เหลือเฉพาะการควบคุมลำดับการทำงาน ไม่ต้องมีข้อความที่แสดงบนหน้าจอปนอยู่ และอ่านค่าจาก `ParkingSummary` ผ่าน getter เท่านั้น ไม่แตะ field ข้างใน
+- **What this file should NOT be responsible for:** ไม่ควรคำนวณอะไรทั้งสิ้น ไม่ควรแก้ไขข้อมูลใน summary และไม่ควรรับ input
+
 ## Class ที่คิดจะสร้างแต่ไม่ได้สร้าง
 
 - ตอนออกแบบเคยคิดว่าจะแยก Class เพิ่มสำหรับจัดการเรื่องต่าง ๆ เช่น ParkingManager หรือ InputValidator
@@ -331,7 +354,9 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 
 - Lost Ticket ไม่มีผลต่อการคิดเงินอีกต่อไป จึงไม่อยู่ในลำดับการคำนวณเลย เป็นเพียงข้อมูลที่ ParkingSummary นับจำนวนไว้
 
-- เริ่มจากตรวจสอบระยะเวลาจอด ถ้าจอดไม่เกิน 15 นาที จะไม่เสียค่าจอด
+- เริ่มจากอ่านข้อมูลออกจากทะเบียนก่อนเป็นอันดับแรก คือประเภทรถและสถานะสมาชิก เพราะสองอย่างนี้เป็นข้อมูลนำเข้าของการคำนวณ ถ้าทะเบียนบอกประเภทรถไม่ได้จึงค่อยถามเจ้าหน้าที่
+
+- จากนั้นจึงตรวจสอบระยะเวลาจอด ถ้าจอดไม่เกิน 15 นาที จะไม่เสียค่าจอด
 
 - ถ้าเกิน 15 นาที จะคำนวณจำนวนชั่วโมงโดยปัดขึ้น แล้วคูณกับอัตราค่าจอดตามประเภทรถ จากนั้นจึงใช้ maximum fee ตามกฎ
 
@@ -342,6 +367,15 @@ CLI รับผิดชอบการติดต่อกับผู้ใ�
 เขียนเป็น pseudo-code ได้ดังนี้:
 
 ```text
+STEP 0  อ่านข้อมูลจากทะเบียน (ทำก่อนเสมอ)
+        IF ทะเบียนเข้ากฎมอเตอร์ไซค์ THEN vehicle type = motorcycle
+        ELSE IF ทะเบียนเข้ากฎรถเก๋ง THEN vehicle type = car
+        ELSE                            ถามเจ้าหน้าที่
+
+        is member = ทะเบียนเข้ากฎสมาชิกหรือไม่   (ไม่ถามเจ้าหน้าที่)
+
+STEP 1  คำนวณค่าจอด
+
 IF duration <= 15 THEN
     normal fee = 0
 ELSE
