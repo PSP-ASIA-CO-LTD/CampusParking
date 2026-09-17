@@ -106,7 +106,8 @@ Total revenue
 - **กฎมอเตอร์ไซค์กับกฎรถเก๋งไม่มีวันชนกัน** เพราะอันหนึ่งลงท้ายด้วยตัวอักษร อีกอันลงท้ายด้วยตัวเลข มี unit test จับเงื่อนไขนี้ไว้โดยเฉพาะ
 - ทั้งสามกฎ**ไม่แยกตัวพิมพ์เล็กกับตัวพิมพ์ใหญ่** `12-abc` ให้ผลเหมือน `12-ABC` ทุกประการ
 - ทั้งสามกฎเป็นการ **ตัดสินแทนเจ้าหน้าที่ และเจ้าหน้าที่แก้ทับไม่ได้** ซึ่งเป็นไปตามคำว่า "ทันที" ที่โจทย์กำหนด ผลข้างเคียงคือรถเก๋งที่บังเอิญมีทะเบียนลงท้ายด้วยตัวอักษร 3 ตัว จะถูกบันทึกเป็นมอเตอร์ไซค์และเก็บเงินตามเรตมอเตอร์ไซค์
-- กฎรถเก๋งตั้งอยู่บนข้อสมมติ 3 ข้อที่**ยังรอการยืนยัน** คือ ต้องเป็นรูปนี้ทั้งทะเบียน ไม่รองรับช่องว่างคั่น และนับเฉพาะตัวอักษรอังกฤษ
+- กฎรถเก๋งเลือกตีความแบบ **เข้มงวด** ไว้ก่อน คือต้องเป็นรูปนี้ทั้งทะเบียน ไม่รองรับช่องว่างคั่น และนับเฉพาะตัวอักษรอังกฤษ เหตุผลคือถ้าตีความกว้างเกินไป ระบบจะตัดสินประเภทรถผิดโดยที่เจ้าหน้าที่แก้ทับไม่ได้ ส่วนการตีความแคบเกินไปแค่ทำให้โปรแกรมถามประเภทรถตามปกติ ซึ่งไม่เสียหาย
+- ผลที่ตามมาของการเลือกแบบเข้มงวดคือ **ทะเบียนไทยจริงอย่าง `1กข 1234` ไม่เข้ากฎ** เพราะมีตัวเลขนำหน้า มีช่องว่างคั่น และเป็นตัวอักษรไทย กฎนี้จึงครอบคลุมเฉพาะทะเบียนรูปแบบ `AB1234` เท่านั้น ยังไม่ได้ยืนยันกับผู้กำหนดโจทย์ว่าตั้งใจให้ครอบคลุมแค่นี้หรือไม่
 
 กฎทั้งหมดอยู่ใน `lib/plate_rules.dart` เขียนเป็นฟังก์ชันล้วนที่ไม่ยุ่งกับหน้าจอ จึงมี unit test ครอบครบ 35 เคส
 
@@ -495,9 +496,9 @@ String input = line.trim();
 
 รวม 48 เคส แบ่งตามที่โจทย์ข้อ 23 กำหนด (boundary / invalid input / business-rule interaction / application state) บวกกลุ่มกฎทะเบียนที่เพิ่มเข้ามาภายหลัง
 
-**ผลการทดสอบ: กรอกแล้ว 4 จาก 48 เคส ผ่านทั้ง 4** (เริ่มรันใหม่เมื่อ 16 กันยายน 2026 ด้วย Dart SDK 3.13 บน macOS)
+**ผลการทดสอบ: ผ่านทั้งหมด 48 เคส** (รันเมื่อ 16–17 กันยายน 2026 ด้วย Dart SDK 3.13 บน macOS)
 
-> กฎข้อ 4 (ทะเบียนบอกว่าเป็นสมาชิก) และข้อ 5 (ทะเบียนบอกว่าเป็นมอเตอร์ไซค์) ทำให้ลำดับคำถามของโปรแกรมเปลี่ยนไป ลำดับ input ที่ใช้รันเมื่อ 8 กันยายน 2026 จึงใช้ไม่ได้อีกต่อไป ตารางนี้เขียน Expected ใหม่ตามกฎปัจจุบันแล้ว และเว้นช่อง Actual ไว้จนกว่าจะได้รันจริงทุกเคส
+> กฎข้อ 4 (ทะเบียนบอกว่าเป็นสมาชิก) และข้อ 5 (ทะเบียนบอกว่าเป็นมอเตอร์ไซค์) ทำให้ลำดับคำถามของโปรแกรมเปลี่ยนไป ลำดับ input ที่ใช้รันเมื่อ 8 กันยายน 2026 จึงใช้ไม่ได้อีกต่อไป ตารางนี้เขียน Expected ใหม่ตามกฎปัจจุบันแล้ว และรันจริงใหม่ทุกเคสก่อนกรอกช่อง Actual
 
 ## ลำดับคำถามของโปรแกรม
 
@@ -535,34 +536,34 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
 | T01 | car 0 นาที — `1 · ABC123 · car · 0 · n` | 0.00 | Final fee 0.00 THB | Pass |
-| T02 | car 15 นาที — `1 · ABC123 · car · 15 · n` | 0.00 |  |  |
-| T03 | car 16 นาที — `1 · ABC123 · car · 16 · n` | 20.00 |  |  |
-| T04 | car 60 นาที — `1 · ABC123 · car · 60 · n` | 20.00 |  |  |
-| T05 | car 61 นาที — `1 · ABC123 · car · 61 · n` | 40.00 |  |  |
-| T06 | car 120 นาที — `1 · ABC123 · car · 120 · n` | 40.00 |  |  |
-| T07 | car 121 นาที — `1 · ABC123 · car · 121 · n` | 60.00 |  |  |
-| T08 | car 500 นาที — `1 · ABC123 · car · 500 · n` | 100.00 (cap) |  |  |
+| T02 | car 15 นาที — `1 · ABC123 · car · 15 · n` | 0.00 | Final fee 0.00 THB | Pass |
+| T03 | car 16 นาที — `1 · ABC123 · car · 16 · n` | 20.00 | Final fee 20.00 THB | Pass |
+| T04 | car 60 นาที — `1 · ABC123 · car · 60 · n` | 20.00 | Final fee 20.00 THB | Pass |
+| T05 | car 61 นาที — `1 · ABC123 · car · 61 · n` | 40.00 | Final fee 40.00 THB | Pass |
+| T06 | car 120 นาที — `1 · ABC123 · car · 120 · n` | 40.00 | Final fee 40.00 THB | Pass |
+| T07 | car 121 นาที — `1 · ABC123 · car · 121 · n` | 60.00 | Final fee 60.00 THB | Pass |
+| T08 | car 500 นาที — `1 · ABC123 · car · 500 · n` | 100.00 (cap) | Final fee 100.00 THB | Pass |
 | T09 | motorcycle 15 นาที — `1 · ABC123 · motorcycle · 15 · n` | 0.00 | Final fee 0.00 THB | Pass |
-| T10 | motorcycle 16 นาที — `1 · ABC123 · motorcycle · 16 · n` | 10.00 |  |  |
-| T11 | motorcycle 61 นาที — `1 · ABC123 · motorcycle · 61 · n` | 20.00 |  |  |
-| T12 | motorcycle 121 นาที — `1 · ABC123 · motorcycle · 121 · n` | 30.00 |  |  |
-| T13 | motorcycle 500 นาที — `1 · ABC123 · motorcycle · 500 · n` | 50.00 (cap) |  |  |
-| T14 | car 999999 นาที — `1 · ABC123 · car · 999999 · n` | 100.00 (cap) |  |  |
+| T10 | motorcycle 16 นาที — `1 · ABC123 · motorcycle · 16 · n` | 10.00 | Final fee 10.00 THB | Pass |
+| T11 | motorcycle 61 นาที — `1 · ABC123 · motorcycle · 61 · n` | 20.00 | Final fee 20.00 THB | Pass |
+| T12 | motorcycle 121 นาที — `1 · ABC123 · motorcycle · 121 · n` | 30.00 | Final fee 30.00 THB | Pass |
+| T13 | motorcycle 500 นาที — `1 · ABC123 · motorcycle · 500 · n` | 50.00 (cap) | Final fee 50.00 THB | Pass |
+| T14 | car 999999 นาที — `1 · ABC123 · car · 999999 · n` | 100.00 (cap) | Final fee 100.00 THB | Pass |
 
 ## Invalid input
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T15 | ประเภทรถ = `CAR` — `1 · ABC123 · CAR · 16 · n` | รับเป็น car, 20.00 |  |  |
-| T16 | ประเภทรถ = ` car ` (มีช่องว่าง) | รับเป็น car, 20.00 |  |  |
-| T17 | ประเภทรถ = `truck` | Invalid vehicle type แล้วถามใหม่ |  |  |
-| T18 | ประเภทรถ = (ว่าง) | Invalid vehicle type แล้วถามใหม่ |  |  |
-| T19 | นาที = `abc` | Invalid number แล้วถามใหม่ ไม่ crash |  |  |
-| T20 | นาที = `-1` | Duration cannot be negative |  |  |
-| T21 | นาที = (ว่าง) | Invalid number แล้วถามใหม่ |  |  |
+| T15 | ประเภทรถ = `CAR` — `1 · ABC123 · CAR · 16 · n` | รับเป็น car, 20.00 | รับเป็น car ไม่มีข้อความเตือน, final 20.00 | Pass |
+| T16 | ประเภทรถ = ` car ` (มีช่องว่าง) | รับเป็น car, 20.00 | รับเป็น car ไม่มีข้อความเตือน, final 20.00 | Pass |
+| T17 | ประเภทรถ = `truck` | Invalid vehicle type แล้วถามใหม่ | "Invalid vehicle type. Please enter car, motorcycle or other." แล้วถามซ้ำ | Pass |
+| T18 | ประเภทรถ = (ว่าง) | Invalid vehicle type แล้วถามใหม่ | "Invalid vehicle type. Please enter car, motorcycle or other." แล้วถามซ้ำ | Pass |
+| T19 | นาที = `abc` | Invalid number แล้วถามใหม่ ไม่ crash | "Invalid number. Please try again." แล้วถามซ้ำ | Pass |
+| T20 | นาที = `-1` | Duration cannot be negative | "Duration cannot be negative." แล้วถามซ้ำ | Pass |
+| T21 | นาที = (ว่าง) | Invalid number แล้วถามใหม่ | "Invalid number. Please try again." แล้วถามซ้ำ | Pass |
 | T22 | นาที = `0` (ใช้ผลรันเดียวกับ T01) | ยอมรับ, 0.00 | Duration 0 minutes, Final fee 0.00 THB | Pass |
-| T23 | lost ticket = `x` — `1 · ABC123 · car · 16 · x` | Please enter y or n แล้วถามใหม่ |  |  |
-| T24 | เมนู = `9` | Invalid choice, ไม่ crash |  |  |
+| T23 | lost ticket = `x` — `1 · ABC123 · car · 16 · x` | Please enter y or n แล้วถามใหม่ | "Please enter y or n." แล้วถามซ้ำ | Pass |
+| T24 | เมนู = `9` | Invalid choice, ไม่ crash | "Invalid choice. Please try again." แล้วกลับมาที่เมนู ไม่ crash | Pass |
 
 > T23 เดิมทดสอบการตอบคำถาม Member ผิด แต่คำถามนั้นถูกตัดออกไปตามกฎข้อ 4 แล้ว จึงย้ายไปทดสอบที่คำถาม Lost ticket แทน ซึ่งใช้ตรรกะ y/n ตัวเดียวกัน
 
@@ -570,23 +571,23 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T25 | car 500 นาที ไม่ใช่สมาชิก — `1 · ABC123 · car · 500 · n` | 100.00 |  |  |
-| T26 | car 500 นาที สมาชิก — `1 · 12-1234 · car · 500 · n` | normal 100 / discount 20 / final 80.00 |  |  |
-| T27 | motorcycle 500 นาที สมาชิก — `1 · 12-1234 · motorcycle · 500 · n` | normal 50 / discount 10 / final 40.00 |  |  |
-| T28 | car 10 นาที สมาชิก (ฟรี + สมาชิก) — `1 · 12-1234 · car · 10 · n` | 0.00 |  |  |
-| T29 | car 30 นาที บัตรหาย — `1 · ABC123 · car · 30 · y` | 20.00 (ไม่มีค่าปรับ) |  |  |
-| T30 | car 30 นาที สมาชิก + บัตรหาย — `1 · 12-1234 · car · 30 · y` | normal 20 / discount 4 / final 16.00 |  |  |
-| T31 | motorcycle 30 นาที บัตรหาย — `1 · ABC123 · motorcycle · 30 · y` | 10.00 |  |  |
-| T32 | car 185 นาที สมาชิก — `1 · 12-1234 · car · 185 · n` | normal 80 / discount 16 / final 64.00 |  |  |
+| T25 | car 500 นาที ไม่ใช่สมาชิก — `1 · ABC123 · car · 500 · n` | 100.00 | Final fee 100.00 THB (ใช้ผลรันเดียวกับ T08) | Pass |
+| T26 | car 500 นาที สมาชิก — `1 · 12-1234 · car · 500 · n` | normal 100 / discount 20 / final 80.00 | normal 100.00 / discount 20.00 / final 80.00 | Pass |
+| T27 | motorcycle 500 นาที สมาชิก — `1 · 12-1234 · motorcycle · 500 · n` | normal 50 / discount 10 / final 40.00 | normal 50.00 / discount 10.00 / final 40.00 | Pass |
+| T28 | car 10 นาที สมาชิก (ฟรี + สมาชิก) — `1 · 12-1234 · car · 10 · n` | 0.00 | Final fee 0.00 THB (ไม่มีส่วนลดเพราะฟรีอยู่แล้ว) | Pass |
+| T29 | car 30 นาที บัตรหาย — `1 · ABC123 · car · 30 · y` | 20.00 (ไม่มีค่าปรับ) | Lost ticket: Yes, Final fee 20.00 THB | Pass |
+| T30 | car 30 นาที สมาชิก + บัตรหาย — `1 · 12-1234 · car · 30 · y` | normal 20 / discount 4 / final 16.00 | Lost ticket: Yes, normal 20.00 / discount 4.00 / final 16.00 | Pass |
+| T31 | motorcycle 30 นาที บัตรหาย — `1 · ABC123 · motorcycle · 30 · y` | 10.00 | Lost ticket: Yes, Final fee 10.00 THB | Pass |
+| T32 | car 185 นาที สมาชิก — `1 · 12-1234 · car · 185 · n` | normal 80 / discount 16 / final 64.00 | normal 80.00 / discount 16.00 / final 64.00 | Pass |
 
 ## Application state
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T33 | ดู summary ก่อนทำรายการใด ๆ — `2` | ทุกค่าเป็น 0, revenue 0.00 |  |  |
-| T34 | 3 รายการตาม scenario ข้อ 14 (ดูรายละเอียดใต้ตาราง) | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 |  |  |
-| T35 | ยกเลิกกลางคัน แล้วดู summary — `1 · ABC123 · car · 30 · n · 1 · ABC123 · car · cancel · 2` | total ยังเป็น 1, revenue 20.00 |  |  |
-| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ |  |  |
+| T33 | ดู summary ก่อนทำรายการใด ๆ — `2` | ทุกค่าเป็น 0, revenue 0.00 | ทุกค่าเป็น 0, revenue 0.00 THB | Pass |
+| T34 | 3 รายการตาม scenario ข้อ 14 (ดูรายละเอียดใต้ตาราง) | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 | total 3 / cars 2 / motorcycles 1 / members 2 / lost 1 / revenue 44.00 THB | Pass |
+| T35 | ยกเลิกกลางคัน แล้วดู summary — `1 · ABC123 · car · 30 · n · 1 · ABC123 · car · cancel · 2` | total ยังเป็น 1, revenue 20.00 | "Transaction cancelled." แล้ว summary total 1, revenue 20.00 THB | Pass |
+| T36 | ทำ 2 รายการต่อกันแล้ว Exit | ออกโปรแกรมได้ปกติ | ทำครบ 2 รายการแล้วออกโปรแกรมได้ปกติ ไม่ค้าง | Pass |
 
 **รายละเอียด T34** ทำสามรายการติดกันแล้วกด `2` ดูยอดสรุป
 
@@ -603,23 +604,23 @@ printf '1\nABC123\ncar\n16\nn\n3\n' | dart run bin/main.dart
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T43 | ทะเบียนเข้ากฎทั้งสองข้อ — `1 · 12-ABC · 30 · n` | ไม่ถามประเภทรถ, เป็น motorcycle, normal 10 / discount 2 / final 8.00 |  |  |
-| T44 | ทะเบียนเข้ากฎรถเก๋ง — `1 · AB1234 · 30 · n` | ไม่ถามประเภทรถ, เป็น car, 20.00 ไม่มีส่วนลด |  |  |
-| T45 | ทะเบียนไม่เข้ากฎไหนเลย — `1 · ABC123 · car · 30 · n` | ถามประเภทรถตามปกติ, 20.00 ไม่มีส่วนลด |  |  |
-| T46 | ทะเบียนเข้าเฉพาะกฎสมาชิก — `1 · 12-1234 · car · 30 · n` | ถามประเภทรถ แต่มีบรรทัดส่วนลด, final 16.00 |  |  |
-| T47 | ทะเบียน `12-` (ไม่มีอะไรต่อท้ายขีด) — `1 · 12- · car · 30 · n` | ไม่ใช่สมาชิก ถามประเภทรถ, 20.00 |  |  |
-| T48 | ทะเบียนพิมพ์เล็ก — `1 · 12-abc · 30 · n` | ได้ผลเหมือน T43 ทุกประการ |  |  |
+| T43 | ทะเบียนเข้ากฎทั้งสองข้อ — `1 · 12-ABC · 30 · n` | ไม่ถามประเภทรถ, เป็น motorcycle, normal 10 / discount 2 / final 8.00 | ไม่ถามประเภทรถ, Vehicle type: motorcycle, normal 10.00 / discount 2.00 / final 8.00 | Pass |
+| T44 | ทะเบียนเข้ากฎรถเก๋ง — `1 · AB1234 · 30 · n` | ไม่ถามประเภทรถ, เป็น car, 20.00 ไม่มีส่วนลด | ไม่ถามประเภทรถ, Vehicle type: car, final 20.00 ไม่มีส่วนลด | Pass |
+| T45 | ทะเบียนไม่เข้ากฎไหนเลย — `1 · ABC123 · car · 30 · n` | ถามประเภทรถตามปกติ, 20.00 ไม่มีส่วนลด | ถามประเภทรถตามปกติ, final 20.00 ไม่มีส่วนลด | Pass |
+| T46 | ทะเบียนเข้าเฉพาะกฎสมาชิก — `1 · 12-1234 · car · 30 · n` | ถามประเภทรถ แต่มีบรรทัดส่วนลด, final 16.00 | ถามประเภทรถ, normal 20.00 / discount 4.00 / final 16.00 | Pass |
+| T47 | ทะเบียน `12-` (ไม่มีอะไรต่อท้ายขีด) — `1 · 12- · car · 30 · n` | ไม่ใช่สมาชิก ถามประเภทรถ, 20.00 | ถามประเภทรถ, ไม่มีส่วนลด, final 20.00 | Pass |
+| T48 | ทะเบียนพิมพ์เล็ก — `1 · 12-abc · 30 · n` | ได้ผลเหมือน T43 ทุกประการ | ไม่ถามประเภทรถ, Vehicle type: motorcycle, final 8.00 เท่ากับ T43 | Pass |
 
 ## Extra cases
 
 | ID | Input / Scenario | Expected | Actual | Pass? |
 |---|---|---|---|---|
-| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ |  |  |
-| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 |  |  |
-| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ |  |  |
+| T37 | ทะเบียนเว้นว่าง | Plate cannot be empty แล้วถามใหม่ | "Plate cannot be empty. Please try again." แล้วถามซ้ำ | Pass |
+| T38 | พิมพ์ `cancel` ที่ช่องแรก | Transaction cancelled, summary ยังเป็น 0 | "Transaction cancelled." และ summary ทุกค่าเป็น 0 | Pass |
+| T39 | input หมดกลางคัน (ไม่มีคำสั่งออก) | ยกเลิกรายการแล้วปิดโปรแกรมเอง ไม่วนไม่รู้จบ | "Transaction cancelled." แล้วปิดโปรแกรมเอง กลับสู่ shell ไม่วนไม่รู้จบ | Pass |
 | T40 | other 30 นาที — `1 · ABC123 · other · 30 · n` | 30.00 | Final fee 30.00 THB | Pass |
-| T41 | other 500 นาที — `1 · ABC123 · other · 500 · n` | 150.00 (cap) |  |  |
-| T42 | other 30 นาที บัตรหาย — `1 · ABC123 · other · 30 · y` | 30.00 |  |  |
+| T41 | other 500 นาที — `1 · ABC123 · other · 500 · n` | 150.00 (cap) | Final fee 150.00 THB | Pass |
+| T42 | other 30 นาที บัตรหาย — `1 · ABC123 · other · 30 · y` | 30.00 | Lost ticket: Yes, Final fee 30.00 THB | Pass |
 
 ## หมายเหตุเรื่องความซ้ำซ้อนกับ unit test
 
